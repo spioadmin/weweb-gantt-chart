@@ -10,7 +10,7 @@
       <div class="view-controls">
         <span class="control-label" :style="{ color: content.corTexto }">Ansicht</span>
         <button
-          v-for="v in viewTypes"
+          v-for="v in visibleViewTypesList"
           :key="v.value"
           :class="['view-btn', { active: currentViewType === v.value }]"
           :style="getViewTypeButtonStyles(v.value)"
@@ -446,8 +446,18 @@ export default {
     },
   },
   computed: {
+    visibleViewTypesList() {
+      const allowed = this.content.visibleViewTypes;
+      if (!Array.isArray(allowed) || allowed.length === 0) return this.viewTypes;
+      const set = new Set(allowed.map((x) => String(x)));
+      return this.viewTypes.filter((v) => set.has(v.value));
+    },
     currentViewType() {
-      return this.viewTypeLocal || this.content.viewType || 'projekte';
+      const preferred = this.viewTypeLocal || this.content.viewType || 'projekte';
+      const visible = this.visibleViewTypesList;
+      if (visible.length === 0) return preferred;
+      if (visible.some((v) => v.value === preferred)) return preferred;
+      return visible[0].value;
     },
     visualizacaoAtual() {
       return this.modoAtual || this.content.visualizacao || 'semana';

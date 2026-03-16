@@ -41,6 +41,13 @@ export default {
       bindable: true,
       defaultValue: [],
     },
+    // Which view tabs to show. Array of: projekte | projektebene | gewerke | mitarbeiter_gewerke. Empty = show all.
+    visibleViewTypes: {
+      label: { en: "Visible Views", de: "Sichtbare Ansichten" },
+      type: "Array",
+      bindable: true,
+      defaultValue: ["projekte", "projektebene", "gewerke", "mitarbeiter_gewerke"],
+    },
     // Active view: projekte | projektebene | gewerke | mitarbeiter_gewerke
     viewType: {
       label: { en: "View Type", de: "Ansicht" },
