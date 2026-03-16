@@ -544,6 +544,8 @@ export default {
       return arr.map((id) => String(id));
     },
     effectiveSelectedProjektIds() {
+      const options = this.projectOptions;
+      if (options.length === 1) return [String(options[0].id)];
       if (this.selectedProjektIdsLocal !== null) return this.selectedProjektIdsLocal;
       return this.selectedProjektIds;
     },
