@@ -41,27 +41,79 @@
     <!-- Row 2: Filters (Phase / Mitarbeiter / Gewerke) with clear labels -->
     <div v-if="currentViewType === 'projektebene' || showGewerkeFilter || showMitarbeiterFilter" class="gantt-controls gantt-controls-row2" :style="{ backgroundColor: content.corHeader, borderColor: content.corBorda }">
       <span class="filter-section-label" :style="{ color: content.corTexto }">Filter</span>
-      <div v-if="currentViewType === 'projektebene'" class="filter-group">
+      <div v-if="currentViewType === 'projektebene'" class="filter-group filter-group-dropdown" ref="phaseDropdownRef">
         <label class="filter-label" :style="{ color: content.corTexto }">Phase</label>
-        <select :value="effectivePhaseId" :style="selectStyles" class="filter-select" @change="onPhaseChange($event)">
-          <option value="">Alle Phasen</option>
-          <option v-for="p in phaseOptions" :key="String(p.id)" :value="String(p.id)">{{ p.name }}</option>
-        </select>
+        <div class="dropdown-trigger-wrap">
+          <button
+            type="button"
+            class="dropdown-trigger"
+            :style="dropdownTriggerStyles"
+            :aria-expanded="phaseDropdownOpen"
+            @click="phaseDropdownOpen = !phaseDropdownOpen; phaseSearchQuery = ''"
+          >
+            <span class="dropdown-trigger-text">{{ phaseDropdownLabel }}</span>
+            <span class="dropdown-chevron" :class="{ open: phaseDropdownOpen }">▼</span>
+          </button>
+          <div v-show="phaseDropdownOpen" class="dropdown-panel" :style="dropdownPanelStyles">
+            <div class="dropdown-search-wrap">
+              <input
+                v-model="phaseSearchQuery"
+                type="text"
+                class="dropdown-search"
+                :style="dropdownSearchStyles"
+                placeholder="Suchen…"
+                @click.stop
+              />
+            </div>
+            <div class="dropdown-panel-inner">
+              <button type="button" class="dropdown-option single-option" :class="{ selected: effectivePhaseId === '' }" :style="{ color: content.corTexto }" @click="selectPhase('')">Alle Phasen</button>
+              <button v-for="p in filteredPhaseOptions" :key="String(p.id)" type="button" class="dropdown-option single-option" :class="{ selected: effectivePhaseId === String(p.id) }" :style="{ color: content.corTexto }" @click="selectPhase(p.id)">{{ p.name }}</button>
+              <div v-if="filteredPhaseOptions.length === 0 && phaseOptions.length > 0" class="dropdown-empty" :style="{ color: content.corTexto }">Keine Treffer</div>
+              <div v-else-if="phaseOptions.length === 0" class="dropdown-empty" :style="{ color: content.corTexto }">Keine Phasen</div>
+            </div>
+            <div class="dropdown-panel-footer" :style="{ borderColor: content.corBorda, color: content.corTexto }">
+              <button type="button" class="dropdown-close-btn" :style="dropdownTriggerStyles" @click="phaseDropdownOpen = false">Schließen</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-if="showMitarbeiterFilter" class="filter-group">
+      <div v-if="showMitarbeiterFilter" class="filter-group filter-group-dropdown" ref="mitarbeiterDropdownRef">
         <label class="filter-label" :style="{ color: content.corTexto }">Mitarbeiter</label>
-        <select
-          :value="content.selectedMitarbeiterId"
-          :style="selectStyles"
-          class="filter-select"
-          @change="onMitarbeiterChange($event)"
-        >
-          <option value="">– auswählen –</option>
-          <option v-for="m in mitarbeiterList" :key="m.id" :value="m.id">{{ mitarbeiterLabel(m) }}</option>
-        </select>
-        <span v-if="content.selectedMitarbeiterId" class="selected-name" :style="{ color: content.corTexto }">{{ selectedMitarbeiterName }}</span>
+        <div class="dropdown-trigger-wrap">
+          <button
+            type="button"
+            class="dropdown-trigger"
+            :style="dropdownTriggerStyles"
+            :aria-expanded="mitarbeiterDropdownOpen"
+            @click="mitarbeiterDropdownOpen = !mitarbeiterDropdownOpen; mitarbeiterSearchQuery = ''"
+          >
+            <span class="dropdown-trigger-text">{{ mitarbeiterDropdownLabel }}</span>
+            <span class="dropdown-chevron" :class="{ open: mitarbeiterDropdownOpen }">▼</span>
+          </button>
+          <div v-show="mitarbeiterDropdownOpen" class="dropdown-panel" :style="dropdownPanelStyles">
+            <div class="dropdown-search-wrap">
+              <input
+                v-model="mitarbeiterSearchQuery"
+                type="text"
+                class="dropdown-search"
+                :style="dropdownSearchStyles"
+                placeholder="Suchen…"
+                @click.stop
+              />
+            </div>
+            <div class="dropdown-panel-inner">
+              <button type="button" class="dropdown-option single-option" :class="{ selected: !content.selectedMitarbeiterId }" :style="{ color: content.corTexto }" @click="selectMitarbeiter('')">– auswählen –</button>
+              <button v-for="m in filteredMitarbeiterList" :key="m.id" type="button" class="dropdown-option single-option" :class="{ selected: String(content.selectedMitarbeiterId) === String(m.id) }" :style="{ color: content.corTexto }" @click="selectMitarbeiter(m.id)">{{ mitarbeiterLabel(m) }}</button>
+              <div v-if="filteredMitarbeiterList.length === 0 && mitarbeiterList.length > 0" class="dropdown-empty" :style="{ color: content.corTexto }">Keine Treffer</div>
+              <div v-else-if="mitarbeiterList.length === 0" class="dropdown-empty" :style="{ color: content.corTexto }">Keine Mitarbeiter</div>
+            </div>
+            <div class="dropdown-panel-footer" :style="{ borderColor: content.corBorda, color: content.corTexto }">
+              <button type="button" class="dropdown-close-btn" :style="dropdownTriggerStyles" @click="mitarbeiterDropdownOpen = false">Schließen</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-if="showGewerkeFilter" class="filter-group filter-group-gewerke" ref="gewerkeDropdownRef">
+      <div v-if="showGewerkeFilter" class="filter-group filter-group-gewerke filter-group-dropdown" ref="gewerkeDropdownRef">
         <label class="filter-label" :style="{ color: content.corTexto }">Gewerke</label>
         <div class="dropdown-trigger-wrap">
           <button
@@ -76,8 +128,19 @@
             <span class="dropdown-chevron" :class="{ open: gewerkeDropdownOpen }">▼</span>
           </button>
           <div v-show="gewerkeDropdownOpen" class="dropdown-panel" :style="dropdownPanelStyles">
+            <div class="dropdown-search-wrap">
+              <input
+                v-model="gewerkeSearchQuery"
+                type="text"
+                class="dropdown-search"
+                :style="dropdownSearchStyles"
+                placeholder="Suchen…"
+                @click.stop
+              />
+            </div>
             <div class="dropdown-panel-inner">
               <label
+                v-if="showOhneGewerkInFilter"
                 class="dropdown-option checkbox-option"
                 :style="{ color: content.corTexto }"
               >
@@ -93,7 +156,7 @@
               </template>
               <template v-else>
                 <label
-                  v-for="g in gewerkeList"
+                  v-for="g in filteredGewerkeList"
                   :key="g.id"
                   class="dropdown-option checkbox-option"
                   :style="{ color: content.corTexto }"
@@ -250,6 +313,11 @@ export default {
       phaseFilterLocal: null,
       gewerkeDropdownOpen: false,
       selectedGewerkIdsLocal: null,
+      phaseDropdownOpen: false,
+      mitarbeiterDropdownOpen: false,
+      phaseSearchQuery: '',
+      mitarbeiterSearchQuery: '',
+      gewerkeSearchQuery: '',
       timeScaleOptions: [
         { value: 'dia', label: 'Tag' },
         { value: 'semana', label: 'Woche' },
@@ -359,6 +427,42 @@ export default {
       if (!id) return '';
       const m = this.mitarbeiterList.find((x) => String(x.id) === String(id));
       return m ? this.mitarbeiterLabel(m) : '';
+    },
+    phaseDropdownLabel() {
+      if (!this.effectivePhaseId) return 'Alle Phasen';
+      const p = this.phaseOptions.find((x) => String(x.id) === this.effectivePhaseId);
+      return p ? p.name : 'Alle Phasen';
+    },
+    mitarbeiterDropdownLabel() {
+      if (!this.content.selectedMitarbeiterId) return '– auswählen –';
+      return this.selectedMitarbeiterName || this.content.selectedMitarbeiterId;
+    },
+    filteredPhaseOptions() {
+      const q = (this.phaseSearchQuery || '').trim().toLowerCase();
+      if (!q) return this.phaseOptions;
+      return this.phaseOptions.filter((p) => (p.name || '').toLowerCase().includes(q));
+    },
+    filteredMitarbeiterList() {
+      const q = (this.mitarbeiterSearchQuery || '').trim().toLowerCase();
+      if (!q) return this.mitarbeiterList;
+      return this.mitarbeiterList.filter((m) => this.mitarbeiterLabel(m).toLowerCase().includes(q));
+    },
+    filteredGewerkeList() {
+      const q = (this.gewerkeSearchQuery || '').trim().toLowerCase();
+      if (!q) return this.gewerkeList;
+      return this.gewerkeList.filter((g) => ((g.name ?? g.label) || g.id || '').toString().toLowerCase().includes(q));
+    },
+    showOhneGewerkInFilter() {
+      const q = (this.gewerkeSearchQuery || '').trim().toLowerCase();
+      if (!q) return true;
+      return 'ohne gewerk'.includes(q);
+    },
+    dropdownSearchStyles() {
+      return {
+        color: this.content.corTexto || '#374151',
+        borderColor: this.content.corBorda || '#E5E7EB',
+        backgroundColor: this.content.corFundo || '#FFFFFF',
+      };
     },
     gewerkeDropdownLabel() {
       const ids = this.effectiveSelectedGewerkIds;
@@ -672,6 +776,19 @@ export default {
       this.$emit('update:content', { ...this.content, selectedPhaseId: value });
       this.$nextTick(() => this.$forceUpdate());
     },
+    selectPhase(phaseId) {
+      const value = phaseId === '' || phaseId == null ? '' : String(phaseId);
+      this.phaseFilterLocal = value || null;
+      this.phaseDropdownOpen = false;
+      this.$emit('update:content', { ...this.content, selectedPhaseId: value });
+      this.$nextTick(() => this.$forceUpdate());
+    },
+    selectMitarbeiter(id) {
+      const value = id === '' || id == null ? '' : String(id);
+      this.mitarbeiterDropdownOpen = false;
+      this.$emit('update:content', { ...this.content, selectedMitarbeiterId: value });
+      this.$nextTick(() => this.$forceUpdate());
+    },
     onMitarbeiterChange(e) {
       const value = e.target.value || '';
       this.$emit('update:content', { ...this.content, selectedMitarbeiterId: value });
@@ -844,20 +961,22 @@ export default {
         this.$refs.timelineHeader.scrollLeft = this.$refs.ganttBody.scrollLeft;
       }
     },
-    handleClickOutsideGewerke(e) {
-      const ref = this.$refs.gewerkeDropdownRef;
-      if (this.gewerkeDropdownOpen && ref && !ref.contains(e.target)) {
-        this.gewerkeDropdownOpen = false;
-      }
+    handleClickOutsideDropdowns(e) {
+      const inPhase = this.$refs.phaseDropdownRef && this.$refs.phaseDropdownRef.contains(e.target);
+      const inMitarbeiter = this.$refs.mitarbeiterDropdownRef && this.$refs.mitarbeiterDropdownRef.contains(e.target);
+      const inGewerke = this.$refs.gewerkeDropdownRef && this.$refs.gewerkeDropdownRef.contains(e.target);
+      if (!inPhase && this.phaseDropdownOpen) this.phaseDropdownOpen = false;
+      if (!inMitarbeiter && this.mitarbeiterDropdownOpen) this.mitarbeiterDropdownOpen = false;
+      if (!inGewerke && this.gewerkeDropdownOpen) this.gewerkeDropdownOpen = false;
     },
   },
   mounted() {
     this.modoAtual = this.content.visualizacao || 'semana';
     this.$nextTick(() => this.scrollToCurrentDay());
-    document.addEventListener('click', this.handleClickOutsideGewerke);
+    document.addEventListener('click', this.handleClickOutsideDropdowns);
   },
   beforeDestroy() {
-    document.removeEventListener('click', this.handleClickOutsideGewerke);
+    document.removeEventListener('click', this.handleClickOutsideDropdowns);
   },
 };
 </script>
@@ -942,7 +1061,8 @@ export default {
   min-width: 0;
 }
 
-.filter-group-gewerke {
+.filter-group-gewerke,
+.filter-group-dropdown {
   position: relative;
 }
 
@@ -1034,7 +1154,7 @@ export default {
   margin-top: 6px;
   min-width: 100%;
   max-width: 280px;
-  max-height: 260px;
+  max-height: 300px;
   border-radius: 8px;
   border: 1px solid;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
@@ -1044,10 +1164,55 @@ export default {
   flex-direction: column;
 }
 
+.dropdown-search-wrap {
+  flex-shrink: 0;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.dropdown-search {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.dropdown-search::placeholder {
+  opacity: 0.7;
+}
+
+.dropdown-search:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
 .dropdown-panel-inner {
   overflow-y: auto;
-  padding: 8px 0;
-  max-height: 200px;
+  padding: 6px 0;
+  max-height: 220px;
+}
+
+.dropdown-option.single-option {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 13px;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.dropdown-option.single-option:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-option.single-option.selected {
+  background-color: rgba(59, 130, 246, 0.12);
+  font-weight: 500;
 }
 
 .dropdown-empty {
