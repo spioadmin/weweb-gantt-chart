@@ -41,25 +41,25 @@ export default {
       bindable: true,
       defaultValue: [],
     },
-    // Which view tabs to show (each appears as a checkbox in the sidebar)
+    // Which view tabs to show (OnOff = toggle in WeWeb sidebar)
     showProjekteView: {
       label: { en: "Show Projekte view", de: "Projekte anzeigen" },
-      type: "Checkbox",
+      type: "OnOff",
       defaultValue: true,
     },
     showProjektebeneView: {
       label: { en: "Show Projektebene view", de: "Projektebene anzeigen" },
-      type: "Checkbox",
+      type: "OnOff",
       defaultValue: true,
     },
     showGewerkeView: {
       label: { en: "Show Gewerke view", de: "Gewerke anzeigen" },
-      type: "Checkbox",
+      type: "OnOff",
       defaultValue: true,
     },
     showMitarbeiterGewerkeView: {
       label: { en: "Show Mitarbeiter-Gewerke view", de: "Mitarbeiter-Gewerke anzeigen" },
-      type: "Checkbox",
+      type: "OnOff",
       defaultValue: true,
     },
     // Active view: projekte | projektebene | gewerke | mitarbeiter_gewerke
@@ -67,7 +67,7 @@ export default {
       label: { en: "View Type", de: "Ansicht" },
       type: "TextSelect",
       options: {
-        choices: [
+        options: [
           { value: "projekte", label: { en: "Projekte", de: "Projekte" } },
           { value: "projektebene", label: { en: "Projektebene", de: "Projektebene" } },
           { value: "gewerke", label: { en: "Gewerke", de: "Gewerke" } },
@@ -109,7 +109,7 @@ export default {
       label: { en: "Time Scale", de: "Zeitskala" },
       type: "TextSelect",
       options: {
-        choices: [
+        options: [
           { value: "dia", label: { en: "Day", de: "Tag" } },
           { value: "semana", label: { en: "Week", de: "Woche" } },
           { value: "mes", label: { en: "Month", de: "Monat" } },
