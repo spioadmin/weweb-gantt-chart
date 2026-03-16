@@ -447,10 +447,14 @@ export default {
   },
   computed: {
     visibleViewTypesList() {
-      const allowed = this.content.visibleViewTypes;
-      if (!Array.isArray(allowed) || allowed.length === 0) return this.viewTypes;
-      const set = new Set(allowed.map((x) => String(x)));
-      return this.viewTypes.filter((v) => set.has(v.value));
+      const show = this.content;
+      const allowed = [];
+      if (show.showProjekteView !== false) allowed.push('projekte');
+      if (show.showProjektebeneView !== false) allowed.push('projektebene');
+      if (show.showGewerkeView !== false) allowed.push('gewerke');
+      if (show.showMitarbeiterGewerkeView !== false) allowed.push('mitarbeiter_gewerke');
+      if (allowed.length === 0) return this.viewTypes;
+      return this.viewTypes.filter((v) => allowed.includes(v.value));
     },
     currentViewType() {
       const preferred = this.viewTypeLocal || this.content.viewType || 'projekte';

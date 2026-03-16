@@ -41,12 +41,26 @@ export default {
       bindable: true,
       defaultValue: [],
     },
-    // Which view tabs to show. Array of: projekte | projektebene | gewerke | mitarbeiter_gewerke. Empty = show all.
-    visibleViewTypes: {
-      label: { en: "Visible Views", de: "Sichtbare Ansichten" },
-      type: "Array",
-      bindable: true,
-      defaultValue: ["projekte", "projektebene", "gewerke", "mitarbeiter_gewerke"],
+    // Which view tabs to show (each appears as a checkbox in the sidebar)
+    showProjekteView: {
+      label: { en: "Show Projekte view", de: "Projekte anzeigen" },
+      type: "Boolean",
+      defaultValue: true,
+    },
+    showProjektebeneView: {
+      label: { en: "Show Projektebene view", de: "Projektebene anzeigen" },
+      type: "Boolean",
+      defaultValue: true,
+    },
+    showGewerkeView: {
+      label: { en: "Show Gewerke view", de: "Gewerke anzeigen" },
+      type: "Boolean",
+      defaultValue: true,
+    },
+    showMitarbeiterGewerkeView: {
+      label: { en: "Show Mitarbeiter-Gewerke view", de: "Mitarbeiter-Gewerke anzeigen" },
+      type: "Boolean",
+      defaultValue: true,
     },
     // Active view: projekte | projektebene | gewerke | mitarbeiter_gewerke
     viewType: {
