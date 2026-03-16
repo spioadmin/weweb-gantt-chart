@@ -44,22 +44,22 @@ export default {
     // Which view tabs to show (each appears as a checkbox in the sidebar)
     showProjekteView: {
       label: { en: "Show Projekte view", de: "Projekte anzeigen" },
-      type: "Boolean",
+      type: "Checkbox",
       defaultValue: true,
     },
     showProjektebeneView: {
       label: { en: "Show Projektebene view", de: "Projektebene anzeigen" },
-      type: "Boolean",
+      type: "Checkbox",
       defaultValue: true,
     },
     showGewerkeView: {
       label: { en: "Show Gewerke view", de: "Gewerke anzeigen" },
-      type: "Boolean",
+      type: "Checkbox",
       defaultValue: true,
     },
     showMitarbeiterGewerkeView: {
       label: { en: "Show Mitarbeiter-Gewerke view", de: "Mitarbeiter-Gewerke anzeigen" },
-      type: "Boolean",
+      type: "Checkbox",
       defaultValue: true,
     },
     // Active view: projekte | projektebene | gewerke | mitarbeiter_gewerke
