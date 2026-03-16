@@ -1,30 +1,30 @@
-# Documento de Design - Componente Gantt
+# Design Document – Gantt Component
 
-## Visão Geral
+## Overview
 
-O componente Gantt será implementado como um elemento customizado WeWeb que renderiza um gráfico de Gantt interativo. O componente receberá dados de usuários e atividades através de propriedades bindáveis e renderizará uma visualização em timeline com barras coloridas representando o status e duração das atividades.
+The Gantt component is implemented as a custom WeWeb element that renders an interactive Gantt chart. It receives user and activity data through bindable properties and renders a timeline with colored bars for status and duration.
 
-## Arquitetura
+## Architecture
 
-### Estrutura do Componente
+### Component Structure
 
-O componente seguirá a arquitetura padrão WeWeb com:
-- `src/wwElement.vue`: Componente Vue principal
-- `ww-config.js`: Configuração de propriedades e metadados
+The component follows the standard WeWeb layout:
+- `src/wwElement.vue`: Main Vue component
+- `ww-config.js`: Property and metadata configuration
 
-### Fluxo de Dados
+### Data Flow
 
 ```
-Dados Bindados (usuarios + atividades) → Processamento → Renderização Gantt
+Bound data (users + activities) → Processing → Gantt rendering
 ```
 
-1. **Entrada**: Dados das tabelas `usuarios` e `atividades` via binding
-2. **Processamento**: Agrupamento por usuário, cálculo de posições e cores
-3. **Saída**: Renderização visual do Gantt com barras e labels
+1. **Input**: Data from `users` and `activities` tables via binding
+2. **Processing**: Group by user, compute positions and colors
+3. **Output**: Rendered Gantt with bars and labels
 
-## Componentes e Interfaces
+## Components and Interfaces
 
-### Propriedades do Componente (ww-config.js)
+### Component Properties (ww-config.js)
 
 ```javascript
 {
@@ -61,15 +61,15 @@ Dados Bindados (usuarios + atividades) → Processamento → Renderização Gant
 }
 ```
 
-### Estrutura do Template Vue
+### Vue Template Structure
 
 ```vue
 <template>
   <div class="gantt-container">
     <div class="gantt-header">
-      <div class="users-column">Usuários</div>
+      <div class="users-column">Users</div>
       <div class="timeline-header">
-        <!-- Escala de tempo -->
+        <!-- Time scale -->
       </div>
     </div>
     <div class="gantt-body">
@@ -77,7 +77,7 @@ Dados Bindados (usuarios + atividades) → Processamento → Renderização Gant
         <div class="user-label">{{ usuario.nome }}</div>
         <div class="timeline-row">
           <div class="activity-bar" v-for="atividade in usuario.atividades">
-            <!-- Barra da atividade -->
+            <!-- Activity bar -->
           </div>
         </div>
       </div>
@@ -86,16 +86,16 @@ Dados Bindados (usuarios + atividades) → Processamento → Renderização Gant
 </template>
 ```
 
-### Computed Properties Principais
+### Main Computed Properties
 
-1. **processedUsers**: Agrupa atividades por usuário responsável
-2. **timelineRange**: Calcula período total (min/max datas)
-3. **timeScale**: Define escala de tempo (dias/semanas)
-4. **activityPositions**: Calcula posições das barras no timeline
+1. **processedUsers**: Groups activities by responsible user
+2. **timelineRange**: Total period (min/max dates)
+3. **timeScale**: Time scale (days/weeks)
+4. **activityPositions**: Bar positions on the timeline
 
-## Modelos de Dados
+## Data Models
 
-### Estrutura Esperada - Usuários
+### Expected Structure – Users
 ```javascript
 {
   id: "uuid",
@@ -106,21 +106,21 @@ Dados Bindados (usuarios + atividades) → Processamento → Renderização Gant
 }
 ```
 
-### Estrutura Esperada - Atividades
+### Expected Structure – Activities
 ```javascript
 {
   id: "number",
   nome: "string",
   descricao: "string",
-  assigned_to: "uuid", // FK para usuarios
+  assigned_to: "uuid", // FK to users
   data_inicio: "timestamp",
   data_previsao_termino: "timestamp", 
   data_real_termino: "timestamp",
-  status: "Pendente|Em desenvolvimento|Em validação|Finalizada"
+  status: "Pending|In progress|In validation|Completed"
 }
 ```
 
-### Modelo Processado Interno
+### Internal Processed Model
 ```javascript
 {
   usuario: {
@@ -141,57 +141,57 @@ Dados Bindados (usuarios + atividades) → Processamento → Renderização Gant
 }
 ```
 
-## Tratamento de Erros
+## Error Handling
 
-### Dados Inválidos
-- **Atividades sem datas**: Exibir como ponto no início do timeline
-- **Usuário não encontrado**: Agrupar em "Não Atribuído"
-- **Datas inválidas**: Ignorar atividade com log de aviso
+### Invalid Data
+- **Activities without dates**: Shown as a point at the start of the timeline
+- **User not found**: Group under "Unassigned"
+- **Invalid dates**: Skip activity and log a warning
 
-### Estados de Loading
-- **Dados vazios**: Exibir mensagem "Nenhuma atividade encontrada"
-- **Carregamento**: Mostrar skeleton/placeholder
+### Loading States
+- **Empty data**: Show "No activities found"
+- **Loading**: Show skeleton/placeholder
 
-### Validações
-- Verificar se `data_inicio <= data_previsao_termino`
-- Validar formato de datas antes do processamento
-- Verificar se status está nos valores permitidos
+### Validation
+- Ensure `data_inicio <= data_previsao_termino`
+- Validate date format before processing
+- Ensure status is one of the allowed values
 
-## Estratégia de Testes
+## Testing Strategy
 
-### Testes Unitários
-1. **Processamento de dados**: Verificar agrupamento correto por usuário
-2. **Cálculo de posições**: Validar posicionamento das barras
-3. **Mapeamento de cores**: Confirmar cores por status
-4. **Tratamento de edge cases**: Dados inválidos, vazios, etc.
+### Unit Tests
+1. **Data processing**: Correct grouping by user
+2. **Position calculation**: Correct bar placement
+3. **Color mapping**: Correct color per status
+4. **Edge cases**: Invalid, empty, or missing data
 
-### Testes de Integração
-1. **Binding de dados**: Verificar recepção correta dos dados
-2. **Renderização**: Confirmar estrutura DOM gerada
-3. **Responsividade**: Testar em diferentes tamanhos de tela
+### Integration Tests
+1. **Data binding**: Data received correctly
+2. **Rendering**: Expected DOM structure
+3. **Responsiveness**: Different screen sizes
 
-### Casos de Teste Principais
-- Atividades com todas as datas preenchidas
-- Atividades sem datas (pendentes)
-- Múltiplos usuários com múltiplas atividades
-- Usuário sem atividades atribuídas
-- Atividades sem usuário atribuído
-- Timeline com diferentes períodos (dias, semanas, meses)
+### Main Test Cases
+- Activities with all dates set
+- Activities without dates (pending)
+- Multiple users with multiple activities
+- User with no assigned activities
+- Activities with no assigned user
+- Timeline with different periods (days, weeks, months)
 
-## Considerações de Performance
+## Performance
 
-### Otimizações
-- **Virtual scrolling**: Para muitos usuários/atividades
-- **Memoização**: Cache de cálculos de posição
-- **Lazy rendering**: Renderizar apenas itens visíveis
+### Optimizations
+- **Virtual scrolling**: For many users/activities
+- **Memoization**: Cache position calculations
+- **Lazy rendering**: Only visible items
 
-### Limitações
-- Máximo recomendado: 100 usuários, 1000 atividades
-- Timeline máximo: 2 anos para manter performance
+### Limits
+- Recommended max: 100 users, 1000 activities
+- Max timeline: 2 years for good performance
 
-## Acessibilidade
+## Accessibility
 
-- Labels ARIA para barras de atividades
-- Navegação por teclado
-- Contraste adequado nas cores
-- Texto alternativo para elementos visuais
+- ARIA labels for activity bars
+- Keyboard navigation
+- Sufficient color contrast
+- Alt text for visual elements

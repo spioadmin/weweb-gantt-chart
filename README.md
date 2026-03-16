@@ -1,47 +1,47 @@
-# Componente Gráfico Gantt para WeWeb
+# Gantt Chart Component for WeWeb
 
-Um componente Gantt interativo e abrangente projetado especificamente para aplicações WeWeb. Este componente fornece visualização poderosa de cronogramas de projeto com suporte completo a binding de dados e opções extensivas de customização.
+An interactive, full-featured Gantt chart component built for WeWeb applications. It provides a clear view of project timelines with full data binding and many customization options.
 
-## Funcionalidades
+## Features
 
-### 📊 Funcionalidade Principal
-- **Visualização Interativa de Timeline**: Exibe atividades como barras horizontais em uma timeline
-- **Múltiplas Escalas de Tempo**: Suporte para visualização por dias, semanas e meses
-- **Acompanhamento de Progresso**: Barras de progresso visuais dentro das barras de atividades
-- **Exibição de Atribuição de Usuários**: Mostra usuários atribuídos com avatares e nomes
-- **Indicador de Data Atual**: Destaca a data de hoje na timeline
+### 📊 Core Features
+- **Interactive timeline**: Tasks shown as horizontal bars on a timeline
+- **Multiple time scales**: Day, week, and month views
+- **Progress display**: Progress bars inside task bars
+- **User assignments**: Assigned users with avatars and names
+- **Current date marker**: Highlights today on the timeline
 
 ### 🔗 WeWeb Integration
-- **Full Data Binding**: Bind tasks and users data from any WeWeb data source
-- **Responsive Properties**: All visual properties support WeWeb's responsive system
-- **Action Integration**: Configurable click actions that integrate with WeWeb workflows
-- **Property Panel**: Comprehensive configuration through WeWeb's property panel
+- **Full data binding**: Bind tasks and users from any WeWeb data source
+- **Responsive props**: All visual options work with WeWeb’s responsive system
+- **Actions**: Configurable click actions for WeWeb workflows
+- **Property panel**: Full configuration via WeWeb’s property panel
 
 ### 🎨 Customization
-- **Color Themes**: Customize colors for different task states and UI elements
-- **Typography Control**: Adjustable font sizes for tasks and headers
-- **Layout Options**: Configurable panel widths and row heights
-- **Accessibility**: High contrast mode and keyboard navigation support
+- **Colors**: Different colors for task states and UI elements
+- **Typography**: Configurable font sizes for tasks and headers
+- **Layout**: Configurable panel widths and row heights
+- **Accessibility**: High contrast and keyboard navigation
 
 ### ⚡ Performance
-- **Virtual Scrolling**: Efficient rendering for large datasets (100+ tasks)
-- **Optimized Updates**: Incremental rendering for data changes
-- **Memory Management**: Automatic cleanup and performance monitoring
-- **Responsive Design**: Mobile-friendly with adaptive layouts
+- **Virtual scrolling**: Handles large lists (100+ tasks)
+- **Efficient updates**: Incremental updates when data changes
+- **Memory**: Cleanup and basic performance handling
+- **Responsive**: Works on mobile with adaptive layout
 
 ### 🛡️ Error Handling
-- **Data Validation**: Comprehensive validation with helpful error messages
-- **Graceful Fallbacks**: Automatic error recovery and fallback states
-- **Developer Warnings**: Validation warnings in development mode
-- **Loading States**: Smooth loading animations and progress indicators
+- **Validation**: Checks data and shows clear errors
+- **Fallbacks**: Recovery and fallback states
+- **Warnings**: Validation warnings in development
+- **Loading**: Loading states and progress indicators
 
 ## Installation
 
 1. Add the component files to your WeWeb project:
-   - `src/wwElement.vue` - Main component file
-   - `ww-config.js` - WeWeb configuration
+   - `src/wwElement.vue` – main component
+   - `ww-config.js` – WeWeb configuration
 
-2. The component will automatically appear in your WeWeb component library
+2. The component will show up in your WeWeb component library.
 
 ## Configuration
 
@@ -84,15 +84,15 @@ Um componente Gantt interativo e abrangente projetado especificamente para aplic
 - **Users Data**: Bindable array of user objects
 
 #### Timeline Settings
-- **Start Date**: Timeline start date (auto-calculated if not set)
-- **End Date**: Timeline end date (auto-calculated if not set)
-- **Time Scale**: Display scale (days, weeks, months)
-- **Show Weekends**: Include weekends in timeline
+- **Start Date**: Timeline start (auto-calculated if not set)
+- **End Date**: Timeline end (auto-calculated if not set)
+- **Time Scale**: Day, week, or month
+- **Show Weekends**: Include weekends on the timeline
 
 #### Appearance
-- **Chart Height**: Overall component height
-- **Task Colors**: Colors for different task states
-- **Grid Color**: Timeline grid line color
+- **Chart Height**: Component height
+- **Task Colors**: Colors per task state
+- **Grid Color**: Timeline grid color
 - **Background Color**: Component background
 - **Text Color**: Default text color
 
@@ -103,22 +103,22 @@ Um componente Gantt interativo e abrangente projetado especificamente para aplic
 - **Left Panel Width**: Width of the task list panel
 
 #### Interaction
-- **Enable Tooltips**: Show detailed tooltips on hover
-- **Enable Task Click**: Allow clicking on tasks
-- **Task Click Action**: WeWeb action to trigger on task click
-- **Keyboard Navigation**: Enable keyboard shortcuts
+- **Enable Tooltips**: Show tooltips on hover
+- **Enable Task Click**: Allow task clicks
+- **Task Click Action**: WeWeb action on task click
+- **Keyboard Navigation**: Keyboard shortcuts
 
 #### Accessibility
-- **High Contrast Mode**: Enhanced contrast for accessibility
-- **Reduced Motion**: Respect user's motion preferences
+- **High Contrast Mode**: Higher contrast option
+- **Reduced Motion**: Respects user motion preferences
 
 ## Usage Examples
 
 ### Basic Setup
-1. Add the Gantt Chart component to your page
-2. Bind your tasks data to the "Tasks Data" property
-3. Bind your users data to the "Users Data" property
-4. Configure appearance and interaction settings
+1. Add the Gantt Chart component to your page.
+2. Bind your tasks to the "Tasks Data" property.
+3. Bind your users to the "Users Data" property.
+4. Set appearance and interaction options.
 
 ### With WeWeb Collections
 ```javascript
@@ -146,23 +146,23 @@ taskClickAction: "navigate-to-task-detail"
 
 ## Task Status Values
 
-The component supports the following task status values:
-- `not-started`: Gray color, indicates task hasn't begun
-- `in-progress`: Blue color (default), indicates active task
-- `completed`: Green color, indicates finished task
-- `on-hold`: Orange color, indicates paused task
+Supported task status values:
+- `not-started`: Gray – not started
+- `in-progress`: Blue (default) – active
+- `completed`: Green – finished
+- `on-hold`: Orange – paused
 
-## Performance Considerations
+## Performance
 
 ### Large Datasets
-- Virtual scrolling automatically activates for 50+ tasks
-- Consider pagination for datasets over 200 tasks
-- Use incremental data loading when possible
+- Virtual scrolling turns on for 50+ tasks.
+- Consider pagination for 200+ tasks.
+- Prefer incremental loading when possible.
 
-### Optimization Tips
-- Provide stable task IDs to enable efficient updates
-- Use consistent date formats across all tasks
-- Minimize unnecessary property changes
+### Tips
+- Use stable task IDs for efficient updates.
+- Use consistent date formats.
+- Avoid unnecessary property changes.
 
 ## Browser Support
 
@@ -171,47 +171,47 @@ The component supports the following task status values:
 - Safari 13+
 - Edge 80+
 
-## Accessibility Features
+## Accessibility
 
-- **Screen Reader Support**: Proper ARIA labels and descriptions
-- **Keyboard Navigation**: Arrow keys for timeline navigation
-- **High Contrast Mode**: Enhanced visibility option
-- **Focus Management**: Clear focus indicators
-- **Reduced Motion**: Respects user preferences
+- **Screen readers**: ARIA labels and descriptions
+- **Keyboard**: Arrow keys for timeline navigation
+- **High contrast**: Optional higher contrast
+- **Focus**: Clear focus indicators
+- **Reduced motion**: Respects user preferences
 
 ## Troubleshooting
 
 ### Common Issues
 
-**Chart not displaying**
-- Verify tasks data is a valid array
-- Check that required fields (name, startDate, endDate) are present
-- Ensure dates are in a recognizable format
+**Chart not showing**
+- Ensure tasks data is a valid array.
+- Check that name, startDate, and endDate are present.
+- Use a supported date format.
 
-**Performance issues**
-- Enable virtual scrolling for large datasets
-- Check for circular dependencies in task data
-- Verify data updates are incremental
+**Performance**
+- Use virtual scrolling for large lists.
+- Check for circular references in task data.
+- Prefer incremental updates.
 
-**Styling problems**
-- Check responsive property settings
-- Verify color values are valid hex codes
-- Ensure container has sufficient height
+**Styling**
+- Check responsive property settings.
+- Use valid hex color values.
+- Give the container enough height.
 
 ### Error Messages
 
-The component provides detailed error messages for common issues:
+The component shows clear messages for:
 - Invalid data structure
 - Missing required fields
 - Invalid date formats
-- Performance warnings
+- Performance-related warnings
 
 ## Development
 
 ### Local Development
-1. Clone the component files
+1. Clone the repo.
 2. Install dependencies: `npm install`
-3. Start development server: `npm run dev`
+3. Start dev server: `npm run dev`
 
 ### Building
 ```bash
@@ -225,21 +225,20 @@ npm run test
 
 ## License
 
-This component is designed for use with WeWeb applications. Please refer to your WeWeb license for usage terms.
+This component is for use with WeWeb. See your WeWeb license for terms.
 
 ## Support
 
-For support and questions:
-1. Check the WeWeb documentation
-2. Review this README for common solutions
-3. Contact WeWeb support for platform-specific issues
+- WeWeb documentation
+- This README for common solutions
+- WeWeb support for platform issues
 
 ## Changelog
 
 ### Version 1.0.0
 - Initial release
-- Full Gantt chart functionality
+- Full Gantt chart behavior
 - WeWeb integration
-- Virtual scrolling support
-- Comprehensive error handling
+- Virtual scrolling
+- Error handling
 - Accessibility features

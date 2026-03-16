@@ -1,76 +1,75 @@
-# Plano de Implementação - Componente Gantt
+# Implementation Plan – Gantt Component
 
-- [x] 1. Configurar propriedades bindáveis no ww-config.js
+- [x] 1. Configure bindable properties in ww-config.js
 
-  - Implementar propriedades para atividades e usuarios como arrays bindáveis
-  - Adicionar propriedades de configuração de cores para cada status
-  - Definir propriedade de altura do componente
-  - _Requisitos: 4.1, 4.2_
+  - Add bindable array properties for atividades and usuarios
+  - Add color configuration properties for each status
+  - Add component height property
+  - _Requirements: 4.1, 4.2_
 
-- [x] 2. Implementar estrutura base do template Vue
+- [x] 2. Implement base Vue template structure
 
-  - Criar estrutura HTML básica do Gantt com header e body
-  - Implementar coluna de usuários e área de timeline
-  - Adicionar classes CSS para layout grid
-  - _Requisitos: 1.1, 3.3_
+  - Create basic Gantt HTML structure with header and body
+  - Implement users column and timeline area
+  - Add CSS classes for grid layout
+  - _Requirements: 1.1, 3.3_
 
-- [x] 3. Desenvolver computed property para processamento de dados
+- [x] 3. Develop computed property for data processing
 
-- [x] 3.1 Implementar processedUsers computed property
+- [x] 3.1 Implement processedUsers computed property
 
-  - Criar lógica para agrupar atividades por usuário responsável
-  - Tratar casos de atividades sem usuário atribuído (grupo "Não Atribuído")
-  - Filtrar apenas usuários ativos que possuem atividades
-  - _Requisitos: 3.1, 3.2, 3.3_
+  - Group activities by responsible user
+  - Handle activities with no assigned user (group as "Unassigned")
+  - Filter to active users that have activities
+  - _Requirements: 3.1, 3.2, 3.3_
 
-- [x] 3.2 Implementar timelineRange computed property
+- [x] 3.2 Implement timelineRange computed property
 
-  - Calcular data mínima e máxima de todas as atividades
-  - Definir período padrão quando não há atividades com datas
-  - Adicionar margem de segurança no início e fim do período
-  - _Requisitos: 5.1_
+  - Compute min and max date from all activities
+  - Set default period when no activities have dates
+  - Add margin at start and end of period
+  - _Requirements: 5.1_
 
-- [x] 3.3 Implementar cálculo de posições das barras
+- [x] 3.3 Implement bar position calculation
 
-  - Criar função para converter datas em posições pixel
-  - Calcular largura das barras baseado na duração das atividades
-  - Tratar atividades sem data_inicio ou data_previsao_termino
-  - _Requisitos: 1.2, 1.3_
+  - Convert dates to pixel positions
+  - Compute bar width from activity duration
+  - Handle activities without data_inicio or data_previsao_termino
+  - _Requirements: 1.2, 1.3_
 
-- [x] 4. Implementar mapeamento de cores por status
+- [x] 4. Implement status-to-color mapping
 
-  - Criar computed property para mapear status para cores configuráveis
-  - Implementar lógica para cores padrão dos status (Pendente, Em desenvolvimento, Em validação, Finalizada)
-  - Adicionar fallback para status não reconhecidos
-  - _Requisitos: 2.1, 2.2, 2.3, 2.4_
+  - Add computed property to map status to configurable colors
+  - Implement default colors for statuses (Pending, In progress, In validation, Completed)
+  - Add fallback for unknown statuses
+  - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-- [x] 5. Renderizar escala de tempo no header
+- [x] 5. Render time scale in header
 
-  - Implementar geração de marcadores de tempo (dias/semanas)
-  - Calcular espaçamento adequado entre marcadores
-  - Formatar datas de forma legível
-  - _Requisitos: 5.1_
+  - Generate time markers (days/weeks)
+  - Compute spacing between markers
+  - Format dates for display
+  - _Requirements: 5.1_
 
-- [x] 6. Renderizar linhas de usuários e barras de atividades
+- [x] 6. Render user rows and activity bars
 
-  - Implementar loop para renderizar cada usuário como linha
-  - Renderizar barras de atividades com posicionamento calculado
-  - Adicionar tooltips com informações da atividade (nome, datas, status)
-  - _Requisitos: 1.1, 1.4, 3.1_
+  - Loop to render each user as a row
+  - Render activity bars with computed positions
+  - Add tooltips with activity info (name, dates, status)
+  - _Requirements: 1.1, 1.4, 3.1_
 
-- [x] 7. Implementar estilos CSS responsivos
+- [x] 7. Implement responsive CSS styles
 
-  - Criar estilos para layout grid do Gantt
-  - Implementar scroll horizontal e vertical
-  - Adicionar estilos para barras de atividades com cores dinâmicas
-  - Garantir responsividade em diferentes tamanhos de tela
-  - _Requisitos: 5.2, 5.3_
+  - Styles for Gantt grid layout
+  - Horizontal and vertical scroll
+  - Styles for activity bars with dynamic colors
+  - Responsive behavior for different screen sizes
+  - _Requirements: 5.2, 5.3_
 
-- [x] 8. Adicionar tratamento de casos extremos
+- [x] 8. Handle edge cases
 
-
-  - Implementar validação de dados de entrada (atividades e usuarios)
-  - Tratar atividades com datas inválidas ou ausentes
-  - Exibir mensagem quando não há atividades para mostrar
-  - Adicionar logs de console para dados problemáticos
-  - _Requisitos: 1.3, 3.2_
+  - Validate input data (activities and users)
+  - Handle activities with invalid or missing dates
+  - Show message when there are no activities
+  - Console logs for problematic data
+  - _Requirements: 1.3, 3.2_

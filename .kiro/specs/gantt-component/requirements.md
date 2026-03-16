@@ -1,59 +1,59 @@
-# Documento de Requisitos - Componente Gantt
+# Requirements Document – Gantt Component
 
-## Introdução
+## Introduction
 
-Este documento define os requisitos para um componente Gantt customizado para WeWeb que permite visualizar atividades de projetos em uma linha do tempo, mostrando usuários responsáveis, datas de início e fim, e status das atividades. O componente será bindável aos dados das tabelas `usuarios` e `atividades` do banco de dados.
+This document defines the requirements for a custom Gantt component for WeWeb that shows project activities on a timeline, including responsible users, start and end dates, and activity status. The component can be bound to `users` and `activities` table data.
 
-## Requisitos
+## Requirements
 
-### Requisito 1
+### Requirement 1
 
-**História do Usuário:** Como um gerente de projeto, eu quero visualizar todas as atividades em um gráfico Gantt, para que eu possa acompanhar o progresso e cronograma do projeto.
+**User story:** As a project manager, I want to see all activities on a Gantt chart so I can track progress and schedule.
 
-#### Critérios de Aceitação
+#### Acceptance criteria
 
-1. QUANDO o componente for carregado ENTÃO o sistema DEVE exibir um gráfico Gantt com todas as atividades
-2. QUANDO uma atividade tiver data_inicio e data_previsao_termino ENTÃO o sistema DEVE exibir uma barra representando o período da atividade
-3. QUANDO uma atividade não tiver datas definidas ENTÃO o sistema DEVE exibir um indicador visual diferenciado
-4. QUANDO o usuário visualizar o Gantt ENTÃO o sistema DEVE mostrar o nome da atividade em cada barra
+1. WHEN the component loads THEN the system MUST show a Gantt chart with all activities
+2. WHEN an activity has data_inicio and data_previsao_termino THEN the system MUST show a bar for that period
+3. WHEN an activity has no dates THEN the system MUST show a distinct visual indicator
+4. WHEN the user views the Gantt THEN the system MUST show the activity name on each bar
 
-### Requisito 2
+### Requirement 2
 
-**História do Usuário:** Como um usuário do sistema, eu quero ver o status de cada atividade no Gantt, para que eu possa identificar rapidamente o estado atual das tarefas.
+**User story:** As a system user, I want to see each activity’s status on the Gantt so I can quickly see the current state of tasks.
 
-#### Critérios de Aceitação
+#### Acceptance criteria
 
-1. QUANDO uma atividade estiver com status "Pendente" ENTÃO o sistema DEVE exibir a barra na cor cinza
-2. QUANDO uma atividade estiver "Em desenvolvimento" ENTÃO o sistema DEVE exibir a barra na cor azul
-3. QUANDO uma atividade estiver "Em validação" ENTÃO o sistema DEVE exibir a barra na cor amarela
-4. QUANDO uma atividade estiver "Finalizada" ENTÃO o sistema DEVE exibir a barra na cor verde
+1. WHEN an activity has status "Pending" THEN the system MUST show the bar in gray
+2. WHEN an activity is "In progress" THEN the system MUST show the bar in blue
+3. WHEN an activity is "In validation" THEN the system MUST show the bar in yellow
+4. WHEN an activity is "Completed" THEN the system MUST show the bar in green
 
-### Requisito 3
+### Requirement 3
 
-**História do Usuário:** Como um gerente de projeto, eu quero ver quem está responsável por cada atividade, para que eu possa identificar a distribuição de trabalho entre a equipe.
+**User story:** As a project manager, I want to see who is responsible for each activity so I can see how work is distributed.
 
-#### Critérios de Aceitação
+#### Acceptance criteria
 
-1. QUANDO o componente exibir uma atividade ENTÃO o sistema DEVE mostrar o nome do usuário responsável (assigned_to)
-2. QUANDO uma atividade não tiver usuário atribuído ENTÃO o sistema DEVE exibir "Não atribuído"
-3. QUANDO o usuário visualizar o Gantt ENTÃO o sistema DEVE agrupar as atividades por usuário responsável
+1. WHEN the component shows an activity THEN the system MUST show the responsible user name (assigned_to)
+2. WHEN an activity has no assigned user THEN the system MUST show "Unassigned"
+3. WHEN the user views the Gantt THEN the system MUST group activities by responsible user
 
-### Requisito 4
+### Requirement 4
 
-**História do Usuário:** Como um desenvolvedor WeWeb, eu quero que o componente seja bindável aos dados do banco, para que eu possa conectar facilmente às tabelas de usuários e atividades.
+**User story:** As a WeWeb developer, I want the component to be bindable to database data so I can easily connect it to users and activities tables.
 
-#### Critérios de Aceitação
+#### Acceptance criteria
 
-1. QUANDO o componente for configurado ENTÃO o sistema DEVE permitir binding da propriedade "atividades" aos dados da tabela atividades
-2. QUANDO o componente for configurado ENTÃO o sistema DEVE permitir binding da propriedade "usuarios" aos dados da tabela usuarios
-3. QUANDO os dados forem atualizados ENTÃO o sistema DEVE atualizar automaticamente a visualização do Gantt
+1. WHEN the component is configured THEN the system MUST allow binding the "atividades" property to the activities table
+2. WHEN the component is configured THEN the system MUST allow binding the "usuarios" property to the users table
+3. WHEN data is updated THEN the system MUST update the Gantt view automatically
 
-### Requisito 5
+### Requirement 5
 
-**História do Usuário:** Como um usuário final, eu quero navegar pela linha do tempo do Gantt, para que eu possa visualizar diferentes períodos do projeto.
+**User story:** As an end user, I want to move along the Gantt timeline so I can view different periods of the project.
 
-#### Critérios de Aceitação
+#### Acceptance criteria
 
-1. QUANDO o Gantt for exibido ENTÃO o sistema DEVE mostrar uma escala de tempo (dias/semanas/meses)
-2. QUANDO houver muitas atividades ENTÃO o sistema DEVE permitir scroll horizontal para navegar pela timeline
-3. QUANDO houver muitos usuários ENTÃO o sistema DEVE permitir scroll vertical para ver todos os usuários
+1. WHEN the Gantt is shown THEN the system MUST show a time scale (days/weeks/months)
+2. WHEN there are many activities THEN the system MUST allow horizontal scroll along the timeline
+3. WHEN there are many users THEN the system MUST allow vertical scroll to see all users
