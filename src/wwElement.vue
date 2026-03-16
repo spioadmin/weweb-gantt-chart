@@ -61,24 +61,57 @@
         </select>
         <span v-if="content.selectedMitarbeiterId" class="selected-name" :style="{ color: content.corTexto }">{{ selectedMitarbeiterName }}</span>
       </div>
-      <div v-if="showGewerkeFilter" class="filter-group">
+      <div v-if="showGewerkeFilter" class="filter-group filter-group-gewerke" ref="gewerkeDropdownRef">
         <label class="filter-label" :style="{ color: content.corTexto }">Gewerke</label>
-        <select
-          multiple
-          :style="selectStyles"
-          class="filter-select gewerke-multi"
-          @change="onGewerkeChange($event)"
-        >
-          <option
-            v-for="g in gewerkeList"
-            :key="g.id"
-            :value="g.id"
-            :selected="selectedGewerkIds.includes(String(g.id))"
+        <div class="dropdown-trigger-wrap">
+          <button
+            type="button"
+            class="dropdown-trigger"
+            :style="dropdownTriggerStyles"
+            :aria-expanded="gewerkeDropdownOpen"
+            aria-haspopup="listbox"
+            @click="gewerkeDropdownOpen = !gewerkeDropdownOpen"
           >
-            {{ (g.name ?? g.label) || g.id || '–' }}
-          </option>
-        </select>
-        <small class="filter-hint" :style="{ color: content.corTexto }">Strg+Klick für mehrere</small>
+            <span class="dropdown-trigger-text">{{ gewerkeDropdownLabel }}</span>
+            <span class="dropdown-chevron" :class="{ open: gewerkeDropdownOpen }">▼</span>
+          </button>
+          <div v-show="gewerkeDropdownOpen" class="dropdown-panel" :style="dropdownPanelStyles">
+            <div class="dropdown-panel-inner">
+              <label
+                class="dropdown-option checkbox-option"
+                :style="{ color: content.corTexto }"
+              >
+                <input
+                  type="checkbox"
+                  :checked="effectiveSelectedGewerkIds.includes('__null__')"
+                  @change="toggleGewerk('__null__')"
+                />
+                <span>Ohne Gewerk</span>
+              </label>
+              <template v-if="gewerkeList.length === 0">
+                <div class="dropdown-empty" :style="{ color: content.corTexto }">Keine Gewerke geladen</div>
+              </template>
+              <template v-else>
+                <label
+                  v-for="g in gewerkeList"
+                  :key="g.id"
+                  class="dropdown-option checkbox-option"
+                  :style="{ color: content.corTexto }"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="effectiveSelectedGewerkIds.includes(String(g.id))"
+                    @change="toggleGewerk(g.id)"
+                  />
+                  <span>{{ (g.name ?? g.label) || g.id || '–' }}</span>
+                </label>
+              </template>
+            </div>
+            <div class="dropdown-panel-footer" :style="{ borderColor: content.corBorda, color: content.corTexto }">
+              <button type="button" class="dropdown-close-btn" :style="dropdownTriggerStyles" @click="gewerkeDropdownOpen = false">Schließen</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -215,6 +248,8 @@ export default {
       modoAtual: null,
       viewTypeLocal: null,
       phaseFilterLocal: null,
+      gewerkeDropdownOpen: false,
+      selectedGewerkIdsLocal: null,
       timeScaleOptions: [
         { value: 'dia', label: 'Tag' },
         { value: 'semana', label: 'Woche' },
@@ -234,6 +269,9 @@ export default {
     },
     'content.selectedPhaseId'(val) {
       if (val !== undefined && val !== null) this.phaseFilterLocal = val === '' ? null : String(val);
+    },
+    'content.selectedGewerkIds'(val) {
+      if (Array.isArray(val)) this.selectedGewerkIdsLocal = null;
     },
   },
   computed: {
@@ -277,6 +315,10 @@ export default {
       if (!Array.isArray(arr)) return [];
       return arr.map((id) => String(id));
     },
+    effectiveSelectedGewerkIds() {
+      if (this.selectedGewerkIdsLocal !== null) return this.selectedGewerkIdsLocal;
+      return this.selectedGewerkIds;
+    },
     // For view 4: gewerk_ids allowed for selected mitarbeiter
     mitarbeiterGewerkIdsSet() {
       const mid = this.content.selectedMitarbeiterId;
@@ -317,6 +359,30 @@ export default {
       if (!id) return '';
       const m = this.mitarbeiterList.find((x) => String(x.id) === String(id));
       return m ? this.mitarbeiterLabel(m) : '';
+    },
+    gewerkeDropdownLabel() {
+      const ids = this.effectiveSelectedGewerkIds;
+      const n = ids.length;
+      if (n === 0) return 'Alle Gewerke';
+      if (n === 1) {
+        if (ids[0] === '__null__') return 'Ohne Gewerk';
+        const g = this.gewerkeList.find((x) => String(x.id) === ids[0]);
+        return g ? ((g.name ?? g.label) || g.id) : ids[0];
+      }
+      return `${n} Gewerke`;
+    },
+    dropdownTriggerStyles() {
+      return {
+        color: this.content.corTexto || '#374151',
+        borderColor: this.content.corBorda || '#E5E7EB',
+        backgroundColor: this.content.corFundo || '#FFFFFF',
+      };
+    },
+    dropdownPanelStyles() {
+      return {
+        borderColor: this.content.corBorda || '#E5E7EB',
+        backgroundColor: this.content.corFundo || '#FFFFFF',
+      };
     },
     groupColumnLabel() {
       if (this.currentViewType === 'projekte') return 'Projekt';
@@ -438,12 +504,13 @@ export default {
         rows = rows.filter((r) => r.phase_id != null && String(r.phase_id) === pid);
       }
 
-      // Gewerke / Mitarbeiter-Gewerke: filter by selectedGewerkIds if any
-      if ((view === 'gewerke' || view === 'mitarbeiter_gewerke') && this.selectedGewerkIds.length > 0) {
-        const set = new Set(this.selectedGewerkIds);
+      // Gewerke / Mitarbeiter-Gewerke: filter by selected Gewerke (including "Ohne Gewerk")
+      const effectiveGewerkIds = this.effectiveSelectedGewerkIds;
+      if ((view === 'gewerke' || view === 'mitarbeiter_gewerke') && effectiveGewerkIds.length > 0) {
+        const set = new Set(effectiveGewerkIds);
         rows = rows.filter((r) => {
           const gid = r.gewerk_id != null ? String(r.gewerk_id) : null;
-          if (gid === null) return set.has('null') || set.has(''); // optional: "Ohne Gewerk" id
+          if (gid === null) return set.has('__null__');
           return set.has(gid);
         });
       }
@@ -613,6 +680,14 @@ export default {
       const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
       this.$emit('update:content', { ...this.content, selectedGewerkIds: selected });
     },
+    toggleGewerk(id) {
+      const sid = String(id);
+      const current = this.effectiveSelectedGewerkIds;
+      const next = current.includes(sid) ? current.filter((x) => x !== sid) : [...current, sid];
+      this.selectedGewerkIdsLocal = next;
+      this.$emit('update:content', { ...this.content, selectedGewerkIds: next });
+      this.$nextTick(() => this.$forceUpdate());
+    },
     barLabel(task) {
       const u = task.einheit ? String(task.einheit).trim() : '';
       const f = task.frage ? String(task.frage).trim() : '';
@@ -769,10 +844,20 @@ export default {
         this.$refs.timelineHeader.scrollLeft = this.$refs.ganttBody.scrollLeft;
       }
     },
+    handleClickOutsideGewerke(e) {
+      const ref = this.$refs.gewerkeDropdownRef;
+      if (this.gewerkeDropdownOpen && ref && !ref.contains(e.target)) {
+        this.gewerkeDropdownOpen = false;
+      }
+    },
   },
   mounted() {
     this.modoAtual = this.content.visualizacao || 'semana';
     this.$nextTick(() => this.scrollToCurrentDay());
+    document.addEventListener('click', this.handleClickOutsideGewerke);
+  },
+  beforeDestroy() {
+    document.removeEventListener('click', this.handleClickOutsideGewerke);
   },
 };
 </script>
@@ -790,8 +875,8 @@ export default {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: 16px;
+  padding: 12px 20px;
   border-bottom: 1px solid;
 }
 
@@ -801,9 +886,9 @@ export default {
 
 .gantt-controls-row2 {
   justify-content: flex-start;
-  padding-top: 8px;
-  padding-bottom: 10px;
-  gap: 20px;
+  padding-top: 12px;
+  padding-bottom: 14px;
+  gap: 28px;
 }
 
 .control-label {
@@ -853,27 +938,162 @@ export default {
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
+}
+
+.filter-group-gewerke {
+  position: relative;
 }
 
 .filter-label {
   font-size: 11px;
-  font-weight: 500;
-  opacity: 0.9;
+  font-weight: 600;
+  opacity: 0.95;
+  letter-spacing: 0.01em;
 }
 
 .filter-select {
-  padding: 6px 10px;
-  border-radius: 4px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid;
   font-size: 13px;
-  min-width: 140px;
-  max-width: 200px;
+  min-width: 160px;
+  max-width: 220px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.gewerke-multi {
-  min-height: 72px;
-  max-height: 120px;
+.filter-select:hover {
+  border-color: #9ca3af;
+}
+
+.filter-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+/* Custom Gewerke dropdown */
+.dropdown-trigger-wrap {
+  position: relative;
+  min-width: 160px;
+  max-width: 240px;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.dropdown-trigger:hover {
+  border-color: #9ca3af;
+}
+
+.dropdown-trigger:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.dropdown-trigger-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-chevron {
+  flex-shrink: 0;
+  margin-left: 8px;
+  font-size: 10px;
+  opacity: 0.8;
+  transform: rotate(0deg);
+  transition: transform 0.2s;
+}
+
+.dropdown-chevron.open {
+  transform: rotate(180deg);
+}
+
+.dropdown-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  min-width: 100%;
+  max-width: 280px;
+  max-height: 260px;
+  border-radius: 8px;
+  border: 1px solid;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-panel-inner {
+  overflow-y: auto;
+  padding: 8px 0;
+  max-height: 200px;
+}
+
+.dropdown-empty {
+  padding: 12px 14px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.dropdown-option.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.dropdown-option.checkbox-option:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.dropdown-option.checkbox-option input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.dropdown-panel-footer {
+  border-top: 1px solid;
+  padding: 8px 10px;
+}
+
+.dropdown-close-btn {
+  width: 100%;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.dropdown-close-btn:hover {
+  opacity: 0.9;
 }
 
 .filter-hint {
