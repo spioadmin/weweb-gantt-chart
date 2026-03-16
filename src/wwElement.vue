@@ -5,9 +5,10 @@
     role="application"
     aria-label="Gantt – Anstehende Punkte"
   >
-    <!-- View type tabs + time scale + filters -->
-    <div class="gantt-controls" :style="{ backgroundColor: content.corHeader, borderColor: content.corBorda }">
+    <!-- Row 1: View tabs + Time scale + Date navigation -->
+    <div class="gantt-controls gantt-controls-row1" :style="{ backgroundColor: content.corHeader, borderColor: content.corBorda }">
       <div class="view-controls">
+        <span class="control-label" :style="{ color: content.corTexto }">Ansicht</span>
         <button
           v-for="v in viewTypes"
           :key="v.value"
@@ -19,6 +20,7 @@
         </button>
       </div>
       <div class="time-scale-controls">
+        <span class="control-label" :style="{ color: content.corTexto }">Zeitskala</span>
         <button
           v-for="modo in timeScaleOptions"
           :key="modo.value"
@@ -29,21 +31,42 @@
           {{ modo.label }}
         </button>
       </div>
-      <div class="filter-controls" v-if="showGewerkeFilter || showMitarbeiterFilter">
+      <div class="navigation-controls">
+        <button class="nav-btn" :style="navButtonStyles" @click="navegarMes(-1)" aria-label="Vorheriger Zeitraum">‹</button>
+        <span class="current-period" :style="{ color: content.corTexto }">{{ periodoAtual }}</span>
+        <button class="nav-btn" :style="navButtonStyles" @click="navegarMes(1)" aria-label="Nächster Zeitraum">›</button>
+      </div>
+    </div>
+
+    <!-- Row 2: Filters (Phase / Mitarbeiter / Gewerke) with clear labels -->
+    <div v-if="currentViewType === 'projektebene' || showGewerkeFilter || showMitarbeiterFilter" class="gantt-controls gantt-controls-row2" :style="{ backgroundColor: content.corHeader, borderColor: content.corBorda }">
+      <span class="filter-section-label" :style="{ color: content.corTexto }">Filter</span>
+      <div v-if="currentViewType === 'projektebene'" class="filter-group">
+        <label class="filter-label" :style="{ color: content.corTexto }">Phase</label>
+        <select :value="effectivePhaseId" :style="selectStyles" class="filter-select" @change="onPhaseChange($event)">
+          <option value="">Alle Phasen</option>
+          <option v-for="p in phaseOptions" :key="String(p.id)" :value="String(p.id)">{{ p.name }}</option>
+        </select>
+      </div>
+      <div v-if="showMitarbeiterFilter" class="filter-group">
+        <label class="filter-label" :style="{ color: content.corTexto }">Mitarbeiter</label>
         <select
-          v-if="showMitarbeiterFilter"
           :value="content.selectedMitarbeiterId"
           :style="selectStyles"
+          class="filter-select"
           @change="onMitarbeiterChange($event)"
         >
-          <option value="">– Mitarbeiter –</option>
-          <option v-for="m in mitarbeiterList" :key="m.id" :value="m.id">{{ (m.name ?? m.label) || m.id || '–' }}</option>
+          <option value="">– auswählen –</option>
+          <option v-for="m in mitarbeiterList" :key="m.id" :value="m.id">{{ mitarbeiterLabel(m) }}</option>
         </select>
+        <span v-if="content.selectedMitarbeiterId" class="selected-name" :style="{ color: content.corTexto }">{{ selectedMitarbeiterName }}</span>
+      </div>
+      <div v-if="showGewerkeFilter" class="filter-group">
+        <label class="filter-label" :style="{ color: content.corTexto }">Gewerke</label>
         <select
-          v-if="showGewerkeFilter"
           multiple
           :style="selectStyles"
-          class="gewerke-multi"
+          class="filter-select gewerke-multi"
           @change="onGewerkeChange($event)"
         >
           <option
@@ -55,22 +78,8 @@
             {{ (g.name ?? g.label) || g.id || '–' }}
           </option>
         </select>
-        <small v-if="showGewerkeFilter" class="filter-hint">Ctrl+click for multiple</small>
+        <small class="filter-hint" :style="{ color: content.corTexto }">Strg+Klick für mehrere</small>
       </div>
-      <div class="navigation-controls">
-        <button class="nav-btn" :style="navButtonStyles" @click="navegarMes(-1)">‹</button>
-        <span class="current-period" :style="{ color: content.corTexto }">{{ periodoAtual }}</span>
-        <button class="nav-btn" :style="navButtonStyles" @click="navegarMes(1)">›</button>
-      </div>
-    </div>
-
-    <!-- Phase filter for Projektebene -->
-    <div v-if="currentViewType === 'projektebene'" class="phase-filter-row" :style="{ backgroundColor: content.corHeader, borderColor: content.corBorda }">
-      <label :style="{ color: content.corTexto }">Phase:</label>
-      <select :value="content.selectedPhaseId" :style="selectStyles" @change="onPhaseChange($event)">
-        <option value="">Alle Phasen</option>
-        <option v-for="p in phaseOptions" :key="p.id" :value="p.id">{{ p.name }}</option>
-      </select>
     </div>
 
     <div class="gantt-header" :style="{ backgroundColor: content.corHeader, borderColor: content.corBorda }">
@@ -107,7 +116,7 @@
           v-for="group in processedGroups"
           :key="group.id"
           :style="{
-            minHeight: `${Math.max(50, group.linhas.length * 30 + 10)}px`,
+            minHeight: `${Math.max(56, group.linhas.length * 36 + 12)}px`,
             borderColor: content.corBorda,
           }"
         >
@@ -118,7 +127,7 @@
           <div
             class="group-timeline"
             :style="{
-              minHeight: `${Math.max(50, group.linhas.length * 30 + 10)}px`,
+              minHeight: `${Math.max(56, group.linhas.length * 36 + 12)}px`,
               width: `${timelineWidth}px`,
               backgroundColor: content.corFundo,
             }"
@@ -140,7 +149,7 @@
               v-for="(linha, linhaIndex) in group.linhas"
               :key="`linha-${linhaIndex}`"
               class="timeline-row"
-              :style="{ top: `${linhaIndex * 30 + 5}px` }"
+              :style="{ top: `${linhaIndex * 36 + 6}px` }"
             >
               <div
                 v-for="task in linha"
@@ -204,7 +213,8 @@ export default {
     return {
       currentDate: new Date(),
       modoAtual: null,
-      viewTypeLocal: null, // so tab clicks work even when WeWeb doesn't persist View Type
+      viewTypeLocal: null,
+      phaseFilterLocal: null,
       timeScaleOptions: [
         { value: 'dia', label: 'Tag' },
         { value: 'semana', label: 'Woche' },
@@ -222,6 +232,9 @@ export default {
     'content.viewType'(val) {
       if (val) this.viewTypeLocal = val;
     },
+    'content.selectedPhaseId'(val) {
+      if (val !== undefined && val !== null) this.phaseFilterLocal = val === '' ? null : String(val);
+    },
   },
   computed: {
     currentViewType() {
@@ -231,17 +244,33 @@ export default {
       return this.modoAtual || this.content.visualizacao || 'semana';
     },
     ganttRows() {
-      const raw = Array.isArray(this.content.ganttData) ? this.content.ganttData : [];
+      let raw = this.content.ganttData;
+      if (Array.isArray(raw)) {
+        raw = raw;
+      } else if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+        raw = [raw];
+      } else {
+        raw = [];
+      }
       return raw.map(normalizeRow).filter(Boolean);
     },
     gewerkeList() {
-      return Array.isArray(this.content.gewerke) ? this.content.gewerke : [];
+      const raw = this.content.gewerke;
+      if (Array.isArray(raw)) return raw;
+      if (raw && typeof raw === 'object') return [raw];
+      return [];
     },
     mitarbeiterList() {
-      return Array.isArray(this.content.mitarbeiter) ? this.content.mitarbeiter : [];
+      const raw = this.content.mitarbeiter;
+      if (Array.isArray(raw)) return raw;
+      if (raw && typeof raw === 'object') return [raw];
+      return [];
     },
     mitarbeiterGewerkeList() {
-      return Array.isArray(this.content.mitarbeiterGewerke) ? this.content.mitarbeiterGewerke : [];
+      const raw = this.content.mitarbeiterGewerke;
+      if (Array.isArray(raw)) return raw;
+      if (raw && typeof raw === 'object') return [raw];
+      return [];
     },
     selectedGewerkIds() {
       const arr = this.content.selectedGewerkIds;
@@ -266,14 +295,28 @@ export default {
     showMitarbeiterFilter() {
       return this.currentViewType === 'mitarbeiter_gewerke';
     },
+    effectivePhaseId() {
+      return this.phaseFilterLocal !== null && this.phaseFilterLocal !== undefined
+        ? this.phaseFilterLocal
+        : (this.content.selectedPhaseId != null && this.content.selectedPhaseId !== ''
+          ? String(this.content.selectedPhaseId)
+          : '');
+    },
     phaseOptions() {
       const seen = new Map();
       this.ganttRows.forEach((r) => {
-        if (r.phase_id != null && r.phase_name != null && !seen.has(r.phase_id)) {
-          seen.set(r.phase_id, { id: r.phase_id, name: r.phase_name });
+        if (r.phase_id != null && r.phase_name != null) {
+          const key = String(r.phase_id);
+          if (!seen.has(key)) seen.set(key, { id: key, name: r.phase_name });
         }
       });
       return Array.from(seen.values());
+    },
+    selectedMitarbeiterName() {
+      const id = this.content.selectedMitarbeiterId;
+      if (!id) return '';
+      const m = this.mitarbeiterList.find((x) => String(x.id) === String(id));
+      return m ? this.mitarbeiterLabel(m) : '';
     },
     groupColumnLabel() {
       if (this.currentViewType === 'projekte') return 'Projekt';
@@ -390,8 +433,8 @@ export default {
       }
 
       // Projektebene: filter by selected phase if set
-      if (view === 'projektebene' && this.content.selectedPhaseId) {
-        const pid = String(this.content.selectedPhaseId);
+      if (view === 'projektebene' && this.effectivePhaseId) {
+        const pid = this.effectivePhaseId;
         rows = rows.filter((r) => r.phase_id != null && String(r.phase_id) === pid);
       }
 
@@ -415,7 +458,7 @@ export default {
           label = row.projekt_name || 'Ohne Projekt';
         } else if (view === 'projektebene') {
           groupId = row.phase_id != null ? String(row.phase_id) : nullKey;
-          label = row.phase_name || 'Ohne Phase';
+          label = (row.phase_name != null && row.phase_name !== '') ? row.phase_name : 'Ohne Phase';
         } else {
           groupId = row.gewerk_id != null ? String(row.gewerk_id) : nullKey;
           label = row.gewerk_name != null ? row.gewerk_name : 'Ohne Gewerk';
@@ -545,9 +588,22 @@ export default {
       this.$emit('update:content', { ...this.content, viewType: value });
       this.$nextTick(() => this.$forceUpdate());
     },
+    mitarbeiterLabel(m) {
+      if (!m) return '–';
+      if (m.name != null && String(m.name).trim() !== '') return String(m.name).trim();
+      if (m.label != null && String(m.label).trim() !== '') return String(m.label).trim();
+      const v = (m.vorname ?? m.first_name ?? m.firstName) != null ? String(m.vorname ?? m.first_name ?? m.firstName).trim() : '';
+      const n = (m.nachname ?? m.last_name ?? m.lastName) != null ? String(m.nachname ?? m.last_name ?? m.lastName).trim() : '';
+      const full = [v, n].filter(Boolean).join(' ');
+      if (full) return full;
+      if (m.email != null && String(m.email).trim() !== '') return String(m.email).trim();
+      return m.id != null ? String(m.id) : '–';
+    },
     onPhaseChange(e) {
       const value = e.target.value || '';
+      this.phaseFilterLocal = value || null;
       this.$emit('update:content', { ...this.content, selectedPhaseId: value });
+      this.$nextTick(() => this.$forceUpdate());
     },
     onMitarbeiterChange(e) {
       const value = e.target.value || '';
@@ -733,16 +789,35 @@ export default {
 .gantt-controls {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 12px;
+  padding: 10px 16px;
   border-bottom: 1px solid;
+}
+
+.gantt-controls-row1 {
+  justify-content: flex-start;
+}
+
+.gantt-controls-row2 {
+  justify-content: flex-start;
+  padding-top: 8px;
+  padding-bottom: 10px;
+  gap: 20px;
+}
+
+.control-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-right: 4px;
 }
 
 .view-controls {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
 }
 
 .view-btn,
@@ -758,53 +833,58 @@ export default {
 
 .view-btn:hover,
 .scale-btn:hover {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .time-scale-controls {
   display: flex;
-  gap: 4px;
-}
-
-.filter-controls {
-  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.filter-controls select {
-  padding: 4px 8px;
+.filter-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-right: 8px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.filter-label {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.filter-select {
+  padding: 6px 10px;
   border-radius: 4px;
-  font-size: 12px;
-  min-width: 120px;
+  font-size: 13px;
+  min-width: 140px;
+  max-width: 200px;
 }
 
 .gewerke-multi {
-  min-height: 60px;
+  min-height: 72px;
+  max-height: 120px;
 }
 
 .filter-hint {
   font-size: 10px;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
-.phase-filter-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  border-bottom: 1px solid;
-}
-
-.phase-filter-row label {
+.selected-name {
   font-size: 12px;
-}
-
-.phase-filter-row select {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  min-width: 160px;
+  font-weight: 500;
+  margin-left: 4px;
 }
 
 .navigation-controls {
@@ -888,7 +968,7 @@ export default {
 .gantt-body {
   overflow-y: auto;
   overflow-x: auto;
-  max-height: calc(100% - 80px);
+  max-height: calc(100% - 120px);
 }
 
 .gantt-group-section {
@@ -962,18 +1042,19 @@ export default {
   position: absolute;
   left: 0;
   right: 0;
-  height: 28px;
+  height: 36px;
   padding: 2px 8px;
 }
 
 .activity-bar {
   position: absolute;
-  height: 24px;
+  min-height: 32px;
+  height: 32px;
   border-radius: 4px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 2px 8px;
+  padding: 4px 10px;
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -999,13 +1080,13 @@ export default {
 
 .project-name {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .activity-name {
@@ -1016,8 +1097,8 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  line-height: 1;
-  margin-top: 1px;
+  line-height: 1.2;
+  margin-top: 2px;
 }
 
 .activity-bar.sem-datas .project-name,
