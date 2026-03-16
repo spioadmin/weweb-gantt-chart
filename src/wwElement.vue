@@ -329,11 +329,19 @@
     <div v-if="taskPopupOpen" class="task-popup-overlay" @click="closeTaskPopup">
       <div class="task-popup" :style="popupStyles" @click.stop>
         <div class="task-popup-header" :style="{ backgroundColor: content.corHeader, borderColor: content.corBorda }">
-          <h3 class="task-popup-title" :style="{ color: content.corTexto }">Aufgabendetails</h3>
+          <h3 class="task-popup-title" :style="{ color: content.corTexto }">{{ taskPopupTask && taskPopupTask._isProjectBar ? 'Projektdetails' : 'Aufgabendetails' }}</h3>
           <button type="button" class="task-popup-close" :style="{ color: content.corTexto }" aria-label="Schließen" @click="closeTaskPopup">×</button>
         </div>
         <div v-if="taskPopupTask" class="task-popup-body" :style="{ color: content.corTexto, borderColor: content.corBorda }">
-          <dl class="task-popup-dl">
+          <dl v-if="taskPopupTask._isProjectBar" class="task-popup-dl">
+            <dt>Projekt</dt>
+            <dd>{{ taskPopupTask.projekt_name || '–' }}</dd>
+            <dt>Erstellt am</dt>
+            <dd>{{ taskPopupTask.startdatum ? formatPopupDate(taskPopupTask.startdatum) : '–' }}</dd>
+            <dt>Deadline</dt>
+            <dd>{{ taskPopupTask.deadline ? formatPopupDate(taskPopupTask.deadline) : '–' }}</dd>
+          </dl>
+          <dl v-else class="task-popup-dl">
             <dt>Projekt</dt>
             <dd>{{ taskPopupTask.projekt_name || '–' }}</dd>
             <dt>Phase</dt>
@@ -455,6 +463,35 @@ export default {
       }
       return raw.map(normalizeRow).filter(Boolean);
     },
+    // Normalized list from projekte table (id, projekt_name, created_at, deadline) for "Projekte" view
+    projekteList() {
+      let raw = this.content.projekteData;
+      if (Array.isArray(raw)) {
+        raw = raw;
+      } else if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+        raw = [raw];
+      } else {
+        raw = [];
+      }
+      return raw
+        .filter((p) => p && (p.id != null || p.projekt_name != null))
+        .map((p) => {
+          const id = p.id != null ? String(p.id) : null;
+          const created = p.created_at != null ? new Date(p.created_at) : null;
+          const end = p.deadline != null ? new Date(p.deadline) : created;
+          return {
+            id: id || `proj-${p.projekt_name}`,
+            projekt_id: id,
+            projekt_name: (p.projekt_name != null && String(p.projekt_name).trim() !== '') ? String(p.projekt_name).trim() : '–',
+            created_at: p.created_at,
+            deadline: p.deadline,
+            startdatum: p.created_at,
+            startDate: created,
+            endDate: end || created,
+            _isProjectBar: true,
+          };
+        });
+    },
     gewerkeList() {
       const raw = this.content.gewerke;
       if (Array.isArray(raw)) return raw;
@@ -492,6 +529,12 @@ export default {
       return this.selectedProjektIds;
     },
     projectOptions() {
+      if (this.projekteList.length > 0) {
+        return this.projekteList.map((p) => ({
+          id: p.projekt_id || p.id,
+          name: p.projekt_name || '–',
+        }));
+      }
       const seen = new Map();
       this.ganttRows.forEach((r) => {
         if (r.projekt_id != null && r.projekt_name != null) {
@@ -730,6 +773,26 @@ export default {
     },
     processedGroups() {
       const view = this.currentViewType;
+
+      // Projekte view: one bar per project from projekte table (created_at → deadline)
+      if (view === 'projekte' && this.projekteList.length > 0) {
+        let projects = [...this.projekteList];
+        const effectiveProjektIds = this.effectiveSelectedProjektIds;
+        if (effectiveProjektIds.length > 0) {
+          const set = new Set(effectiveProjektIds);
+          projects = projects.filter((p) => p.projekt_id != null && set.has(String(p.projekt_id)));
+        }
+        return projects.map((p) => {
+          const item = { ...p, _rowKey: `projekt-${p.id}` };
+          return {
+            id: p.projekt_id || p.id,
+            label: p.projekt_name || 'Ohne Projekt',
+            items: [item],
+            linhas: [[item]],
+          };
+        });
+      }
+
       let rows = [...this.ganttRows];
 
       // View 4: restrict to gewerke of selected mitarbeiter
@@ -741,7 +804,7 @@ export default {
         });
       }
 
-      // Dedupe for Projekte and Projektebene
+      // Dedupe for Projekte and Projektebene (only when not using projekteList)
       if (view === 'projekte' || view === 'projektebene') {
         rows = dedupeById(rows);
       }
@@ -966,6 +1029,7 @@ export default {
       this.$nextTick(() => this.$forceUpdate());
     },
     barLabel(task) {
+      if (task._isProjectBar) return task.projekt_name || '–';
       const u = task.einheit ? String(task.einheit).trim() : '';
       const f = task.frage ? String(task.frage).trim() : '';
       if (u && f) return `${f} – ${u}`;

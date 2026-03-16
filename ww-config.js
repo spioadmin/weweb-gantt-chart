@@ -13,6 +13,13 @@ export default {
       bindable: true,
       defaultValue: [],
     },
+    // Projects list for "Projekte" view: one bar per project (created_at → deadline). Bind to public.projekte.
+    projekteData: {
+      label: { en: "Projects (Projekte)", de: "Projekte (Tabelle)" },
+      type: "Array",
+      bindable: true,
+      defaultValue: [],
+    },
     // For Gewerke filter dropdown (views 3 & 4)
     gewerke: {
       label: { en: "Gewerke List", de: "Gewerke-Liste" },
