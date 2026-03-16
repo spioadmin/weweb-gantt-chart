@@ -62,6 +62,12 @@ export default {
       type: "OnOff",
       defaultValue: true,
     },
+    // Show "Zum Projekt" button in task/project detail popup (emits projekt_id on click)
+    showZumProjektButton: {
+      label: { en: "Show 'Zum Projekt' button in popup", de: "'Zum Projekt'-Button in Popup anzeigen" },
+      type: "OnOff",
+      defaultValue: true,
+    },
     // Active view: projekte | projektebene | gewerke | mitarbeiter_gewerke
     viewType: {
       label: { en: "View Type", de: "Ansicht" },
@@ -163,6 +169,16 @@ export default {
         groupKey: "",
       },
       default: true,
+    },
+    {
+      name: "onZumProjekt",
+      label: { en: "Zum Projekt clicked", de: "Zum Projekt geklickt" },
+      event: {
+        projekt_id: "",
+        id: "",
+        projekt_name: "",
+      },
+      default: false,
     },
   ],
 };

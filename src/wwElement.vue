@@ -362,6 +362,11 @@
             <dd v-if="taskPopupTask.notizen">{{ taskPopupTask.notizen }}</dd>
           </dl>
         </div>
+        <div v-if="showZumProjektButtonInPopup && taskPopupTask && taskPopupTask.projekt_id != null" class="task-popup-footer" :style="{ borderColor: content.corBorda }">
+          <button type="button" class="task-popup-zum-projekt" :style="zumProjektButtonStyles" @click="onZumProjektClick">
+            Zum Projekt
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -576,6 +581,16 @@ export default {
     popupStyles() {
       return {
         backgroundColor: this.content.corFundo || '#FFFFFF',
+        borderColor: this.content.corBorda || '#E5E7EB',
+        color: this.content.corTexto || '#374151',
+      };
+    },
+    showZumProjektButtonInPopup() {
+      return this.content.showZumProjektButton !== false;
+    },
+    zumProjektButtonStyles() {
+      return {
+        backgroundColor: this.content.corHeader || '#F0F4F8',
         borderColor: this.content.corBorda || '#E5E7EB',
         color: this.content.corTexto || '#374151',
       };
@@ -1165,7 +1180,7 @@ export default {
             gewerk_name: task.gewerk_name,
             startdatum: task.startdatum,
             deadline: task.deadline,
-            umsetzungsdauer: task.umsetzungsdauer,
+            umsetzungsdauer: task.umsetzungsdauer + ' Stunden',
             einheit: task.einheit,
             antwort_text: task.antwort_text,
             notizen: task.notizen,
@@ -1206,6 +1221,18 @@ export default {
       this.taskPopupOpen = false;
       this.taskPopupTask = null;
       this.taskPopupGroup = null;
+    },
+    onZumProjektClick() {
+      const task = this.taskPopupTask;
+      if (!task || task.projekt_id == null) return;
+      this.$emit('trigger-event', {
+        name: 'onZumProjekt',
+        event: {
+          projekt_id: task.projekt_id,
+          id: task.id,
+          projekt_name: task.projekt_name || '',
+        },
+      });
     },
     popupFrage(task) {
       if (!task) return '–';
@@ -1867,5 +1894,23 @@ export default {
   margin: 0 0 0 0;
   color: inherit;
   opacity: 0.95;
+}
+
+.task-popup-footer {
+  padding: 12px 16px;
+  border-top: 1px solid;
+}
+.task-popup-zum-projekt {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.task-popup-zum-projekt:hover {
+  opacity: 0.9;
 }
 </style>
