@@ -348,14 +348,14 @@
             <dd>{{ taskPopupTask.phase_name || '–' }}</dd>
             <dt>Gewerk</dt>
             <dd>{{ taskPopupTask.gewerk_name != null ? taskPopupTask.gewerk_name : 'Ohne Gewerk' }}</dd>
-            <dt>Frage / Einheit</dt>
-            <dd>{{ barLabel(taskPopupTask) }}</dd>
+            <dt>Frage</dt>
+            <dd>{{ popupFrage(taskPopupTask) }}</dd>
             <dt>Startdatum</dt>
             <dd>{{ taskPopupTask.startdatum ? formatPopupDate(taskPopupTask.startdatum) : '–' }}</dd>
             <dt>Deadline</dt>
             <dd>{{ taskPopupTask.deadline ? formatPopupDate(taskPopupTask.deadline) : '–' }}</dd>
-            <dt v-if="taskPopupTask.umsetzungsdauer != null">Umsetzungsdauer</dt>
-            <dd v-if="taskPopupTask.umsetzungsdauer != null">{{ taskPopupTask.umsetzungsdauer }} {{ taskPopupTask.einheit || '' }}</dd>
+            <dt v-if="popupUmsetzungsdauerNumber(taskPopupTask) != null">Umsetzungsdauer</dt>
+            <dd v-if="popupUmsetzungsdauerNumber(taskPopupTask) != null">{{ popupUmsetzungsdauerNumber(taskPopupTask) }}</dd>
             <dt v-if="taskPopupTask.antwort_text">Antwort</dt>
             <dd v-if="taskPopupTask.antwort_text">{{ taskPopupTask.antwort_text }}</dd>
             <dt v-if="taskPopupTask.notizen">Notizen</dt>
@@ -1206,6 +1206,20 @@ export default {
       this.taskPopupOpen = false;
       this.taskPopupTask = null;
       this.taskPopupGroup = null;
+    },
+    popupFrage(task) {
+      if (!task) return '–';
+      const f = task.frage;
+      if (f == null || f === '') return '–';
+      const s = String(f).trim();
+      return s || '–';
+    },
+    popupUmsetzungsdauerNumber(task) {
+      if (!task || task.umsetzungsdauer == null) return null;
+      const v = task.umsetzungsdauer;
+      if (typeof v === 'number' && !Number.isNaN(v)) return v;
+      const num = parseFloat(String(v), 10);
+      return Number.isNaN(num) ? null : num;
     },
     formatPopupDate(val) {
       if (val == null) return '–';
