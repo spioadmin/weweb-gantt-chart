@@ -102,8 +102,8 @@
               />
             </div>
             <div class="dropdown-panel-inner">
-              <button type="button" class="dropdown-option single-option" :class="{ selected: !content.selectedMitarbeiterId }" :style="{ color: content.corTexto }" @click="selectMitarbeiter('')">– auswählen –</button>
-              <button v-for="m in filteredMitarbeiterList" :key="m.id" type="button" class="dropdown-option single-option" :class="{ selected: String(content.selectedMitarbeiterId) === String(m.id) }" :style="{ color: content.corTexto }" @click="selectMitarbeiter(m.id)">{{ mitarbeiterLabel(m) }}</button>
+              <button type="button" class="dropdown-option single-option" :class="{ selected: !effectiveSelectedMitarbeiterId }" :style="{ color: content.corTexto }" @click="selectMitarbeiter('')">– auswählen –</button>
+              <button v-for="m in filteredMitarbeiterList" :key="m.id" type="button" class="dropdown-option single-option" :class="{ selected: String(effectiveSelectedMitarbeiterId) === String(m.id) }" :style="{ color: content.corTexto }" @click="selectMitarbeiter(m.id)">{{ mitarbeiterLabel(m) }}</button>
               <div v-if="filteredMitarbeiterList.length === 0 && mitarbeiterList.length > 0" class="dropdown-empty" :style="{ color: content.corTexto }">Keine Treffer</div>
               <div v-else-if="mitarbeiterList.length === 0" class="dropdown-empty" :style="{ color: content.corTexto }">Keine Mitarbeiter</div>
             </div>
@@ -315,6 +315,7 @@ export default {
       selectedGewerkIdsLocal: null,
       phaseDropdownOpen: false,
       mitarbeiterDropdownOpen: false,
+      selectedMitarbeiterIdLocal: null,
       phaseSearchQuery: '',
       mitarbeiterSearchQuery: '',
       gewerkeSearchQuery: '',
@@ -340,6 +341,9 @@ export default {
     },
     'content.selectedGewerkIds'(val) {
       if (Array.isArray(val)) this.selectedGewerkIdsLocal = null;
+    },
+    'content.selectedMitarbeiterId'(val) {
+      if (val !== undefined && val !== null) this.selectedMitarbeiterIdLocal = val === '' ? null : String(val);
     },
   },
   computed: {
@@ -387,9 +391,17 @@ export default {
       if (this.selectedGewerkIdsLocal !== null) return this.selectedGewerkIdsLocal;
       return this.selectedGewerkIds;
     },
+    effectiveSelectedMitarbeiterId() {
+      if (this.selectedMitarbeiterIdLocal !== null && this.selectedMitarbeiterIdLocal !== undefined) {
+        return this.selectedMitarbeiterIdLocal;
+      }
+      return this.content.selectedMitarbeiterId != null && this.content.selectedMitarbeiterId !== ''
+        ? String(this.content.selectedMitarbeiterId)
+        : '';
+    },
     // For view 4: gewerk_ids allowed for selected mitarbeiter
     mitarbeiterGewerkIdsSet() {
-      const mid = this.content.selectedMitarbeiterId;
+      const mid = this.effectiveSelectedMitarbeiterId;
       if (!mid) return null;
       const set = new Set();
       this.mitarbeiterGewerkeList.forEach((mg) => {
@@ -423,7 +435,7 @@ export default {
       return Array.from(seen.values());
     },
     selectedMitarbeiterName() {
-      const id = this.content.selectedMitarbeiterId;
+      const id = this.effectiveSelectedMitarbeiterId;
       if (!id) return '';
       const m = this.mitarbeiterList.find((x) => String(x.id) === String(id));
       return m ? this.mitarbeiterLabel(m) : '';
@@ -434,8 +446,8 @@ export default {
       return p ? p.name : 'Alle Phasen';
     },
     mitarbeiterDropdownLabel() {
-      if (!this.content.selectedMitarbeiterId) return '– auswählen –';
-      return this.selectedMitarbeiterName || this.content.selectedMitarbeiterId;
+      if (!this.effectiveSelectedMitarbeiterId) return '– auswählen –';
+      return this.selectedMitarbeiterName || this.effectiveSelectedMitarbeiterId;
     },
     filteredPhaseOptions() {
       const q = (this.phaseSearchQuery || '').trim().toLowerCase();
@@ -785,6 +797,7 @@ export default {
     },
     selectMitarbeiter(id) {
       const value = id === '' || id == null ? '' : String(id);
+      this.selectedMitarbeiterIdLocal = value || null;
       this.mitarbeiterDropdownOpen = false;
       this.$emit('update:content', { ...this.content, selectedMitarbeiterId: value });
       this.$nextTick(() => this.$forceUpdate());
