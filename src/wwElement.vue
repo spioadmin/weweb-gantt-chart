@@ -38,9 +38,59 @@
       </div>
     </div>
 
-    <!-- Row 2: Filters (Phase / Mitarbeiter / Gewerke) with clear labels -->
-    <div v-if="currentViewType === 'projektebene' || showGewerkeFilter || showMitarbeiterFilter" class="gantt-controls gantt-controls-row2" :style="{ backgroundColor: content.corHeader, borderColor: content.corBorda }">
+    <!-- Row 2: Filters (Projekt / Phase / Mitarbeiter / Gewerke) with clear labels -->
+    <div v-if="currentViewType === 'projekte' || currentViewType === 'projektebene' || showGewerkeFilter || showMitarbeiterFilter" class="gantt-controls gantt-controls-row2" :style="{ backgroundColor: content.corHeader, borderColor: content.corBorda }">
       <span class="filter-section-label" :style="{ color: content.corTexto }">Filter</span>
+      <div v-if="currentViewType === 'projekte' || currentViewType === 'projektebene'" class="filter-group filter-group-dropdown" ref="projektDropdownRef">
+        <label class="filter-label" :style="{ color: content.corTexto }">Projekt</label>
+        <div class="dropdown-trigger-wrap">
+          <button
+            type="button"
+            class="dropdown-trigger"
+            :style="dropdownTriggerStyles"
+            :aria-expanded="projektDropdownOpen"
+            @click="projektDropdownOpen = !projektDropdownOpen; projektSearchQuery = ''"
+          >
+            <span class="dropdown-trigger-text">{{ projektDropdownLabel }}</span>
+            <span class="dropdown-chevron" :class="{ open: projektDropdownOpen }">▼</span>
+          </button>
+          <div v-show="projektDropdownOpen" class="dropdown-panel" :style="dropdownPanelStyles">
+            <div class="dropdown-search-wrap">
+              <input
+                v-model="projektSearchQuery"
+                type="text"
+                class="dropdown-search"
+                :style="dropdownSearchStyles"
+                placeholder="Suchen…"
+                @click.stop
+              />
+            </div>
+            <div class="dropdown-panel-inner">
+              <template v-if="projectOptions.length === 0">
+                <div class="dropdown-empty" :style="{ color: content.corTexto }">Keine Projekte</div>
+              </template>
+              <template v-else>
+                <label
+                  v-for="p in filteredProjectOptions"
+                  :key="p.id"
+                  class="dropdown-option checkbox-option"
+                  :style="{ color: content.corTexto }"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="effectiveSelectedProjektIds.includes(String(p.id))"
+                    @change="toggleProjekt(p.id)"
+                  />
+                  <span>{{ p.name || p.id || '–' }}</span>
+                </label>
+              </template>
+            </div>
+            <div class="dropdown-panel-footer" :style="{ borderColor: content.corBorda, color: content.corTexto }">
+              <button type="button" class="dropdown-close-btn" :style="dropdownTriggerStyles" @click="projektDropdownOpen = false">Schließen</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div v-if="currentViewType === 'projektebene'" class="filter-group filter-group-dropdown" ref="phaseDropdownRef">
         <label class="filter-label" :style="{ color: content.corTexto }">Phase</label>
         <div class="dropdown-trigger-wrap">
@@ -274,6 +324,38 @@
         </div>
       </div>
     </div>
+
+    <!-- Task detail popup -->
+    <div v-if="taskPopupOpen" class="task-popup-overlay" @click="closeTaskPopup">
+      <div class="task-popup" :style="popupStyles" @click.stop>
+        <div class="task-popup-header" :style="{ backgroundColor: content.corHeader, borderColor: content.corBorda }">
+          <h3 class="task-popup-title" :style="{ color: content.corTexto }">Aufgabendetails</h3>
+          <button type="button" class="task-popup-close" :style="{ color: content.corTexto }" aria-label="Schließen" @click="closeTaskPopup">×</button>
+        </div>
+        <div v-if="taskPopupTask" class="task-popup-body" :style="{ color: content.corTexto, borderColor: content.corBorda }">
+          <dl class="task-popup-dl">
+            <dt>Projekt</dt>
+            <dd>{{ taskPopupTask.projekt_name || '–' }}</dd>
+            <dt>Phase</dt>
+            <dd>{{ taskPopupTask.phase_name || '–' }}</dd>
+            <dt>Gewerk</dt>
+            <dd>{{ taskPopupTask.gewerk_name != null ? taskPopupTask.gewerk_name : 'Ohne Gewerk' }}</dd>
+            <dt>Frage / Einheit</dt>
+            <dd>{{ barLabel(taskPopupTask) }}</dd>
+            <dt>Startdatum</dt>
+            <dd>{{ taskPopupTask.startdatum ? formatPopupDate(taskPopupTask.startdatum) : '–' }}</dd>
+            <dt>Deadline</dt>
+            <dd>{{ taskPopupTask.deadline ? formatPopupDate(taskPopupTask.deadline) : '–' }}</dd>
+            <dt v-if="taskPopupTask.umsetzungsdauer != null">Umsetzungsdauer</dt>
+            <dd v-if="taskPopupTask.umsetzungsdauer != null">{{ taskPopupTask.umsetzungsdauer }} {{ taskPopupTask.einheit || '' }}</dd>
+            <dt v-if="taskPopupTask.antwort_text">Antwort</dt>
+            <dd v-if="taskPopupTask.antwort_text">{{ taskPopupTask.antwort_text }}</dd>
+            <dt v-if="taskPopupTask.notizen">Notizen</dt>
+            <dd v-if="taskPopupTask.notizen">{{ taskPopupTask.notizen }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -315,10 +397,16 @@ export default {
       selectedGewerkIdsLocal: null,
       phaseDropdownOpen: false,
       mitarbeiterDropdownOpen: false,
+      projektDropdownOpen: false,
       selectedMitarbeiterIdLocal: null,
+      selectedProjektIdsLocal: null,
       phaseSearchQuery: '',
+      projektSearchQuery: '',
       mitarbeiterSearchQuery: '',
       gewerkeSearchQuery: '',
+      taskPopupOpen: false,
+      taskPopupTask: null,
+      taskPopupGroup: null,
       timeScaleOptions: [
         { value: 'dia', label: 'Tag' },
         { value: 'semana', label: 'Woche' },
@@ -344,6 +432,9 @@ export default {
     },
     'content.selectedMitarbeiterId'(val) {
       if (val !== undefined && val !== null) this.selectedMitarbeiterIdLocal = val === '' ? null : String(val);
+    },
+    'content.selectedProjektIds'(val) {
+      if (Array.isArray(val)) this.selectedProjektIdsLocal = null;
     },
   },
   computed: {
@@ -390,6 +481,47 @@ export default {
     effectiveSelectedGewerkIds() {
       if (this.selectedGewerkIdsLocal !== null) return this.selectedGewerkIdsLocal;
       return this.selectedGewerkIds;
+    },
+    selectedProjektIds() {
+      const arr = this.content.selectedProjektIds;
+      if (!Array.isArray(arr)) return [];
+      return arr.map((id) => String(id));
+    },
+    effectiveSelectedProjektIds() {
+      if (this.selectedProjektIdsLocal !== null) return this.selectedProjektIdsLocal;
+      return this.selectedProjektIds;
+    },
+    projectOptions() {
+      const seen = new Map();
+      this.ganttRows.forEach((r) => {
+        if (r.projekt_id != null && r.projekt_name != null) {
+          const key = String(r.projekt_id);
+          if (!seen.has(key)) seen.set(key, { id: key, name: r.projekt_name });
+        }
+      });
+      return Array.from(seen.values());
+    },
+    filteredProjectOptions() {
+      const q = (this.projektSearchQuery || '').trim().toLowerCase();
+      if (!q) return this.projectOptions;
+      return this.projectOptions.filter((p) => (p.name || '').toLowerCase().includes(q));
+    },
+    projektDropdownLabel() {
+      const ids = this.effectiveSelectedProjektIds;
+      const n = ids.length;
+      if (n === 0) return 'Alle Projekte';
+      if (n === 1) {
+        const p = this.projectOptions.find((x) => String(x.id) === ids[0]);
+        return p ? (p.name || p.id) : '1 Projekt';
+      }
+      return `${n} Projekte`;
+    },
+    popupStyles() {
+      return {
+        backgroundColor: this.content.corFundo || '#FFFFFF',
+        borderColor: this.content.corBorda || '#E5E7EB',
+        color: this.content.corTexto || '#374151',
+      };
     },
     effectiveSelectedMitarbeiterId() {
       if (this.selectedMitarbeiterIdLocal !== null && this.selectedMitarbeiterIdLocal !== undefined) {
@@ -614,6 +746,13 @@ export default {
         rows = dedupeById(rows);
       }
 
+      // Projekt filter: when one or more projects selected, restrict rows
+      const effectiveProjektIds = this.effectiveSelectedProjektIds;
+      if ((view === 'projekte' || view === 'projektebene') && effectiveProjektIds.length > 0) {
+        const projektSet = new Set(effectiveProjektIds);
+        rows = rows.filter((r) => r.projekt_id != null && projektSet.has(String(r.projekt_id)));
+      }
+
       // Projektebene: filter by selected phase if set
       if (view === 'projektebene' && this.effectivePhaseId) {
         const pid = this.effectivePhaseId;
@@ -818,6 +957,14 @@ export default {
       this.$emit('update:content', { ...this.content, selectedGewerkIds: next });
       this.$nextTick(() => this.$forceUpdate());
     },
+    toggleProjekt(id) {
+      const sid = String(id);
+      const current = this.effectiveSelectedProjektIds;
+      const next = current.includes(sid) ? current.filter((x) => x !== sid) : [...current, sid];
+      this.selectedProjektIdsLocal = next;
+      this.$emit('update:content', { ...this.content, selectedProjektIds: next });
+      this.$nextTick(() => this.$forceUpdate());
+    },
     barLabel(task) {
       const u = task.einheit ? String(task.einheit).trim() : '';
       const f = task.frage ? String(task.frage).trim() : '';
@@ -922,6 +1069,9 @@ export default {
       });
     },
     onTaskClick(task, group) {
+      this.taskPopupTask = task;
+      this.taskPopupGroup = group;
+      this.taskPopupOpen = true;
       this.$emit('trigger-event', {
         name: 'onTaskClick',
         event: {
@@ -974,13 +1124,25 @@ export default {
         this.$refs.timelineHeader.scrollLeft = this.$refs.ganttBody.scrollLeft;
       }
     },
+    closeTaskPopup() {
+      this.taskPopupOpen = false;
+      this.taskPopupTask = null;
+      this.taskPopupGroup = null;
+    },
+    formatPopupDate(val) {
+      if (val == null) return '–';
+      const d = typeof val === 'string' ? new Date(val) : val;
+      return Number.isNaN(d.getTime()) ? String(val) : d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    },
     handleClickOutsideDropdowns(e) {
       const inPhase = this.$refs.phaseDropdownRef && this.$refs.phaseDropdownRef.contains(e.target);
       const inMitarbeiter = this.$refs.mitarbeiterDropdownRef && this.$refs.mitarbeiterDropdownRef.contains(e.target);
       const inGewerke = this.$refs.gewerkeDropdownRef && this.$refs.gewerkeDropdownRef.contains(e.target);
+      const inProjekt = this.$refs.projektDropdownRef && this.$refs.projektDropdownRef.contains(e.target);
       if (!inPhase && this.phaseDropdownOpen) this.phaseDropdownOpen = false;
       if (!inMitarbeiter && this.mitarbeiterDropdownOpen) this.mitarbeiterDropdownOpen = false;
       if (!inGewerke && this.gewerkeDropdownOpen) this.gewerkeDropdownOpen = false;
+      if (!inProjekt && this.projektDropdownOpen) this.projektDropdownOpen = false;
     },
   },
   mounted() {
@@ -1544,5 +1706,74 @@ export default {
 .gantt-body::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
+}
+
+/* Task detail popup */
+.task-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.task-popup {
+  min-width: 320px;
+  max-width: 90vw;
+  max-height: 85vh;
+  border-radius: 8px;
+  border: 1px solid;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.task-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid;
+}
+.task-popup-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.task-popup-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  opacity: 0.8;
+}
+.task-popup-close:hover {
+  opacity: 1;
+}
+.task-popup-body {
+  padding: 16px;
+  overflow-y: auto;
+  border-top: none;
+}
+.task-popup-dl {
+  margin: 0;
+  font-size: 14px;
+}
+.task-popup-dl dt {
+  font-weight: 600;
+  margin-top: 10px;
+  margin-bottom: 2px;
+  color: inherit;
+}
+.task-popup-dl dt:first-child {
+  margin-top: 0;
+}
+.task-popup-dl dd {
+  margin: 0 0 0 0;
+  color: inherit;
+  opacity: 0.95;
 }
 </style>

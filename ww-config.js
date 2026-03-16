@@ -69,6 +69,13 @@ export default {
       bindable: true,
       defaultValue: "",
     },
+    // Multi-select project filter (Projekte / Projektebene). Array of projekt_id. Empty = show all.
+    selectedProjektIds: {
+      label: { en: "Selected Project IDs", de: "Ausgewählte Projekt-IDs" },
+      type: "Array",
+      bindable: true,
+      defaultValue: [],
+    },
     // Time scale: day | week | month
     visualizacao: {
       label: { en: "Time Scale", de: "Zeitskala" },
