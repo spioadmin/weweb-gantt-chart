@@ -204,6 +204,7 @@ export default {
     return {
       currentDate: new Date(),
       modoAtual: null,
+      viewTypeLocal: null, // so tab clicks work even when WeWeb doesn't persist View Type
       timeScaleOptions: [
         { value: 'dia', label: 'Tag' },
         { value: 'semana', label: 'Woche' },
@@ -217,9 +218,14 @@ export default {
       ],
     };
   },
+  watch: {
+    'content.viewType'(val) {
+      if (val) this.viewTypeLocal = val;
+    },
+  },
   computed: {
     currentViewType() {
-      return this.content.viewType || 'projekte';
+      return this.viewTypeLocal || this.content.viewType || 'projekte';
     },
     visualizacaoAtual() {
       return this.modoAtual || this.content.visualizacao || 'semana';
@@ -535,6 +541,7 @@ export default {
       };
     },
     setViewType(value) {
+      this.viewTypeLocal = value;
       this.$emit('update:content', { ...this.content, viewType: value });
       this.$nextTick(() => this.$forceUpdate());
     },
