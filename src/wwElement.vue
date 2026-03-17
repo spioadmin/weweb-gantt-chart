@@ -1990,6 +1990,10 @@ export default {
   border-radius: 6px;
   cursor: pointer;
   transition: opacity 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 .task-popup-zum-projekt:hover {
   opacity: 0.9;
