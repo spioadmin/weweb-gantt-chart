@@ -123,6 +123,13 @@ export default {
       },
       defaultValue: "semana",
     },
+    // Show loading overlay (bind to a variable: true while data loads, false when done)
+    isLoading: {
+      label: { en: "Loading", de: "Laden" },
+      type: "OnOff",
+      bindable: true,
+      defaultValue: false,
+    },
     altura: {
       label: { en: "Height", de: "Höhe" },
       type: "Length",

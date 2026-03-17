@@ -5,6 +5,7 @@
     role="application"
     aria-label="Gantt – Anstehende Punkte"
   >
+    <div class="gantt-main">
     <!-- Row 1: View tabs + Time scale + Date navigation -->
     <div class="gantt-controls gantt-controls-row1" :style="{ backgroundColor: content.corHeader, borderColor: content.corBorda }">
       <div class="view-controls">
@@ -325,6 +326,20 @@
       </div>
     </div>
 
+    <!-- Loading overlay (controlled by content.isLoading) -->
+    <div
+      class="gantt-loader-overlay"
+      :class="{ 'gantt-loader-visible': content.isLoading }"
+      aria-hidden="!content.isLoading"
+      aria-live="polite"
+    >
+      <div class="gantt-loader-content">
+        <div class="gantt-loader-spinner" :style="loaderSpinnerStyles"></div>
+        <span class="gantt-loader-text" :style="{ color: content.corTexto }">Laden …</span>
+      </div>
+    </div>
+    </div>
+
     <!-- Task detail popup -->
     <div v-if="taskPopupOpen" class="task-popup-overlay" @click="closeTaskPopup">
       <div class="task-popup" :style="popupStyles" @click.stop>
@@ -595,6 +610,12 @@ export default {
         backgroundColor: this.content.corHeader || '#F0F4F8',
         borderColor: this.content.corBorda || '#E5E7EB',
         color: this.content.corTexto || '#374151',
+      };
+    },
+    loaderSpinnerStyles() {
+      const accent = this.content.corEmDesenvolvimento || this.content.corDiaAtual || '#3B82F6';
+      return {
+        borderTopColor: accent,
       };
     },
     effectiveSelectedMitarbeiterId() {
@@ -1284,6 +1305,61 @@ export default {
   border: 1px solid;
   border-radius: 8px;
   overflow: hidden;
+}
+
+.gantt-main {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.gantt-loader-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 100;
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+}
+.gantt-loader-overlay.gantt-loader-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.gantt-loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.gantt-loader-spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 0, 0, 0.08);
+  border-top-color: transparent;
+  animation: gantt-loader-spin 0.85s cubic-bezier(0.5, 0.15, 0.5, 0.85) infinite;
+}
+
+.gantt-loader-text {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  opacity: 0.9;
+}
+
+@keyframes gantt-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .gantt-controls {
