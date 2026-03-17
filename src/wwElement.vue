@@ -1977,10 +1977,13 @@ export default {
 .task-popup-footer {
   padding: 12px 16px;
   border-top: 1px solid;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .task-popup-zum-projekt {
-  width: 100%;
-  padding: 10px 16px;
+  min-width: 180px;
+  padding: 10px 24px;
   font-size: 14px;
   font-weight: 500;
   border: 1px solid;
